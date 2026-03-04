@@ -1,0 +1,87 @@
+{{ define "title" }}访问验证 - 曲奇API{{ end }}
+
+{{ define "body" }}
+<div class="min-h-screen flex items-center justify-center p-4" x-data="accessForm()">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-90">
+        <!-- 标题区域 -->
+        <div class="text-center mb-8">
+            <h1 class="text-[28px] font-semibold text-[#1C1C1E] leading-tight">访问验证</h1>
+            <p class="text-[15px] text-[#8E8E93] mt-2">请输入访问密码以继续</p>
+            <p class="text-[13px] text-[#8E8E93] mt-2">访问密码请前往微信公众号「曲奇味卷卷」后台发送“密码”获取</p>
+        </div>
+
+        <!-- 表单 -->
+        <form @submit.prevent="submit">
+            <!-- 隐藏的用户名字段，用于密码管理器 -->
+            <input type="text" name="username" value="user" autocomplete="username" class="hidden" aria-hidden="true">
+            <div class="mb-6 relative">
+                <input :type="showPassword ? 'text' : 'password'" x-model="password" placeholder="请输入访问密码" autocomplete="current-password"
+                    class="w-full bg-[#E5E5EA] border-none rounded-xl px-4 py-3 text-[15px] text-[#1C1C1E] placeholder-[#C7C7CC] transition-all duration-200 focus:bg-white focus:ring-2 focus:ring-primary/10 focus:outline-none pr-10">
+                <button type="button" @click="showPassword = !showPassword"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E8E93] hover:text-[#1C1C1E] transition-colors focus:outline-none">
+                    <!-- Eye Icon (Show) -->
+                    <svg x-show="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <!-- Eye Slash Icon (Hide) -->
+                    <svg x-show="showPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    </svg>
+                </button>
+            </div>
+
+            <button type="submit" :disabled="loading"
+                class="w-full bg-primary text-white rounded-xl px-6 py-3 text-[15px] font-semibold transition-all duration-150 ease-out active:bg-primary-dark active:scale-[0.98] disabled:opacity-50">
+                <span x-show="!loading">验证</span>
+                <span x-show="loading" class="flex items-center justify-center gap-2">
+                    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z">
+                        </path>
+                    </svg>
+                    验证中...
+                </span>
+            </button>
+        </form>
+
+        <!-- 错误提示 -->
+        <p x-show="error" x-text="error"
+            class="mt-4 text-center text-[13px] text-danger transition-all duration-250"></p>
+    </div>
+</div>
+{{ end }}
+
+{{ define "scripts" }}
+<script>
+    function accessForm() {
+        return {
+            password: '',
+            showPassword: false,
+            loading: false,
+            error: '',
+            async submit() {
+                this.loading = true;
+                this.error = '';
+                try {
+                    const res = await axios.post('/api/v1/site/verify', {
+                        password: this.password
+                    });
+                    if (res.data.code !== 200) {
+                        this.error = res.data.msg;
+                        return;
+                    }
+                    const redirect = new URLSearchParams(window.location.search).get('redirect') || '/';
+                    window.location.href = redirect;
+                } catch (e) {
+                    this.error = e.response?.data?.msg || '验证失败';
+                } finally {
+                    this.loading = false;
+                }
+            }
+        }
+    }
+</script>
+{{ end }}

@@ -1,0 +1,48 @@
+{{ define "base" }}
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ template "title" . }}</title>
+    <link rel="icon" type="image/x-icon" href="/static/favico.ico">
+    <link rel="stylesheet" href="/static/css/tailwind.css">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
+    <script>LA.init({ id: "3HxQRMoHKBJizCgs", ck: "3HxQRMoHKBJizCgs", autoTrack: true, hashMode: true, screenRecord: true })</script>
+    {{ template "head" . }}
+</head>
+
+<body class="bg-[#F2F2F7] min-h-screen font-sans">
+    <!-- 公告区域 - 仅前端页面显示 -->
+    <div x-data="announcementBanner()" x-init="init()" x-show="!window.location.pathname.startsWith('/admin')" x-cloak>
+        <template x-for="a in announcements" :key="a.id">
+            <div class="border-b overflow-hidden"
+                :class="{
+                    'bg-[#E8F4FD] border-[#B8DAFF] text-[#004085]': a.type === 'info',
+                    'bg-[#FFF3CD] border-[#FFEEBA] text-[#856404]': a.type === 'warning',
+                    'bg-[#F8D7DA] border-[#F5C6CB] text-[#721C24]': a.type === 'error'
+                }">
+                <div class="announcement-scroll py-2">
+                    <div class="announcement-content whitespace-nowrap inline-block">
+                        <span class="font-medium text-sm" x-text="a.title"></span>
+                        <span class="mx-2">|</span>
+                        <span class="text-sm" x-text="a.content"></span>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="/static/js/components/announcement.js"></script>
+    {{ template "body" . }}
+    {{ template "scripts" . }}
+</body>
+
+</html>
+{{ end }}
+
+{{ define "title" }}曲奇API{{ end }}
+{{ define "head" }}{{ end }}
+{{ define "scripts" }}{{ end }}

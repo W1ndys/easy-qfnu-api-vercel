@@ -38,7 +38,7 @@ func recognizeCaptcha(imageBytes []byte) (string, error) {
 
 	model := os.Getenv("OCR_MODEL")
 	if model == "" {
-		model = "PaddlePaddle/PaddleOCR-VL-1.5"
+		model = "deepseek-ai/DeepSeek-OCR"
 	}
 
 	b64Image := base64.StdEncoding.EncodeToString(imageBytes)

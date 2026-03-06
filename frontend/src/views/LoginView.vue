@@ -39,7 +39,7 @@
               required
             />
             <div
-              class="w-28 h-10 border border-gray-300 rounded-md flex items-center justify-center bg-gray-50 cursor-pointer overflow-hidden"
+              class="w-32 h-10 border border-gray-300 rounded-md flex items-center justify-center bg-gray-50 cursor-pointer overflow-hidden"
               @click="refreshCaptcha"
               :title="captchaLoading ? '加载中...' : '点击刷新验证码'"
             >
@@ -47,7 +47,7 @@
                 v-if="captchaImage"
                 :src="'data:image/png;base64,' + captchaImage"
                 alt="验证码"
-                class="w-full h-full object-cover"
+                class="w-full h-auto"
               />
               <span v-else class="text-xs text-gray-400">
                 {{ captchaLoading ? '加载中...' : '点击获取' }}
@@ -101,13 +101,16 @@ async function refreshCaptcha() {
   
   try {
     const res = await getInitCookie()
+    console.log('验证码响应:', res)
     if (res.code === 0) {
       captchaImage.value = res.data.captcha_image
       initCookie.value = res.data.cookie
+      console.log('验证码图片 base64 长度:', res.data.captcha_image?.length)
     } else {
       errorMsg.value = res.msg || '获取验证码失败'
     }
   } catch (err) {
+    console.error('获取验证码失败:', err)
     errorMsg.value = '获取验证码失败，请检查网络'
   } finally {
     captchaLoading.value = false

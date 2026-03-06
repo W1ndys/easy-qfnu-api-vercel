@@ -28,27 +28,6 @@
           />
         </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">验证码</label>
-          <div class="flex gap-2">
-            <input
-              v-model="form.captcha"
-              type="text"
-              placeholder="请输入验证码"
-              class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-              autocomplete="off"
-            />
-            <img
-              :src="captchaUrl"
-              alt="验证码"
-              class="w-32 h-10 border border-gray-300 rounded-md cursor-pointer object-cover bg-gray-50"
-              @click="refreshCaptcha"
-              :title="captchaLoading ? '加载中...' : '点击刷新验证码'"
-            />
-          </div>
-        </div>
-
         <div v-if="errorMsg" class="text-red-500 text-sm text-center">
           {{ errorMsg }}
         </div>
@@ -66,55 +45,28 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { getCaptcha, login } from '@/api/zhjw'
+import { ref } from 'vue'
+import { login } from '@/api/zhjw'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 
 const form = ref({
   username: '',
-  password: '',
-  captcha: ''
+  password: ''
 })
 
-const captchaUrl = ref('')
 const loading = ref(false)
-const captchaLoading = ref(false)
 const errorMsg = ref('')
 
-async function refreshCaptcha() {
-  if (captchaLoading.value) return
-  
-  captchaLoading.value = true
-  errorMsg.value = ''
-  
-  try {
-    const blob = await getCaptcha()
-    captchaUrl.value = URL.createObjectURL(blob)
-    form.value.captcha = ''
-  } catch (err) {
-    console.error('获取验证码失败:', err)
-    errorMsg.value = '获取验证码失败，请检查网络'
-  } finally {
-    captchaLoading.value = false
-  }
-}
-
 async function handleLogin() {
-  if (!form.value.captcha) {
-    errorMsg.value = '请输入验证码'
-    return
-  }
-
   loading.value = true
   errorMsg.value = ''
 
   try {
     const res = await login({
       username: form.value.username,
-      password: form.value.password,
-      captcha: form.value.captcha
+      password: form.value.password
     })
 
     if (res.code === 200) {
@@ -122,20 +74,12 @@ async function handleLogin() {
       alert('登录成功！')
     } else {
       errorMsg.value = res.msg || '登录失败'
-      form.value.captcha = ''
-      refreshCaptcha()
     }
   } catch (err) {
     console.error('登录失败:', err)
     errorMsg.value = '登录失败，请检查网络'
-    form.value.captcha = ''
-    refreshCaptcha()
   } finally {
     loading.value = false
   }
 }
-
-onMounted(() => {
-  refreshCaptcha()
-})
 </script>

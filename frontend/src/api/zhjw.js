@@ -1,9 +1,5 @@
 import api from './request'
 
-export function getCaptcha() {
-  return api.get('/v1/zhjw/captcha', { responseType: 'blob' })
-}
-
 export function login(data) {
   return api.post('/v1/zhjw/login', data)
 }

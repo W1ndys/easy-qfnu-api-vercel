@@ -24,7 +24,6 @@ func InitRouter() *gin.Engine {
 	apiV1 := apiRoot.Group("/v1")
 
 	{
-		apiV1.GET("/zhjw/captcha", zhjw.GetCaptcha)
 		apiV1.POST("/zhjw/login", zhjw.Login)
 	}
 

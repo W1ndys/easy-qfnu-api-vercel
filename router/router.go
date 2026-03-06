@@ -23,6 +23,9 @@ func InitRouter() *gin.Engine {
 
 	apiV1 := apiRoot.Group("/v1")
 
+	// 登录接口不需要 AuthRequired 中间件
+	apiV1.POST("/zhjw/login", zhjw.Login)
+
 	zhjwGroup := apiV1.Group("/zhjw")
 	zhjwGroup.Use(middleware.AuthRequired())
 	{

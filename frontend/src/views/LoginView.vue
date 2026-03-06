@@ -42,7 +42,7 @@
             <img
               :src="captchaUrl"
               alt="验证码"
-              class="w-32 h-10 border border-gray-300 rounded-md cursor-pointer object-cover"
+              class="w-32 h-10 border border-gray-300 rounded-md cursor-pointer object-cover bg-gray-50"
               @click="refreshCaptcha"
               :title="captchaLoading ? '加载中...' : '点击刷新验证码'"
             />
@@ -67,7 +67,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getZhjwCaptchaUrl, login } from '@/api/zhjw'
+import { getCaptcha, login } from '@/api/zhjw'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
@@ -83,16 +83,22 @@ const loading = ref(false)
 const captchaLoading = ref(false)
 const errorMsg = ref('')
 
-function refreshCaptcha() {
+async function refreshCaptcha() {
   if (captchaLoading.value) return
   
   captchaLoading.value = true
   errorMsg.value = ''
-  captchaUrl.value = getZhjwCaptchaUrl()
   
-  setTimeout(() => {
+  try {
+    const blob = await getCaptcha()
+    captchaUrl.value = URL.createObjectURL(blob)
+    form.value.captcha = ''
+  } catch (err) {
+    console.error('获取验证码失败:', err)
+    errorMsg.value = '获取验证码失败，请检查网络'
+  } finally {
     captchaLoading.value = false
-  }, 500)
+  }
 }
 
 async function handleLogin() {
@@ -120,6 +126,7 @@ async function handleLogin() {
       refreshCaptcha()
     }
   } catch (err) {
+    console.error('登录失败:', err)
     errorMsg.value = '登录失败，请检查网络'
     form.value.captcha = ''
     refreshCaptcha()

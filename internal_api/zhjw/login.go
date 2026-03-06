@@ -16,7 +16,13 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	cookie, err := zhjwService.LoginWithCaptcha(req.Username, req.Password, req.Captcha)
+	sessionCookie, err := c.Cookie("zhjw_session")
+	if err != nil {
+		response.Fail(c, "会话已过期，请刷新验证码")
+		return
+	}
+
+	cookie, err := zhjwService.LoginWithCaptcha(req.Username, req.Password, req.Captcha, sessionCookie)
 	if err != nil {
 		switch {
 		case errors.Is(err, zhjwService.ErrInvalidCredentials):
@@ -30,6 +36,8 @@ func Login(c *gin.Context) {
 		}
 		return
 	}
+
+	c.SetCookie("zhjw_session", "", -1, "/", "", false, true)
 
 	response.Success(c, model.LoginResponse{
 		Cookie: cookie,

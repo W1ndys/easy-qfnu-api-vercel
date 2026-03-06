@@ -19,7 +19,7 @@ var (
 	ErrLoginFailed        = errors.New("登录验证失败")
 )
 
-func LoginWithCaptcha(username, password, captcha string) (string, error) {
+func LoginWithCaptcha(username, password, captcha, sessionCookie string) (string, error) {
 	jar, _ := cookiejar.New(nil)
 	httpClient := &http.Client{
 		Jar:     jar,
@@ -29,17 +29,11 @@ func LoginWithCaptcha(username, password, captcha string) (string, error) {
 	client := resty.NewWithClient(httpClient)
 	client.SetHeader("User-Agent", defaultUA)
 
+	u, _ := url.Parse(baseURL)
+	cookies := parseCookieString(sessionCookie)
+	jar.SetCookies(u, cookies)
+
 	slog.Info("登录流程开始", "username", username)
-
-	_, err := client.R().Get(baseURL + "/jsxsd/")
-	if err != nil {
-		return "", fmt.Errorf("获取初始 Cookie 失败: %w", err)
-	}
-
-	_, err = client.R().Get(baseURL + "/jsxsd/verifycode.servlet")
-	if err != nil {
-		return "", fmt.Errorf("获取验证码失败: %w", err)
-	}
 
 	encoded := base64.StdEncoding.EncodeToString([]byte(username)) +
 		"%%%" +
@@ -77,9 +71,26 @@ func LoginWithCaptcha(username, password, captcha string) (string, error) {
 		return "", ErrLoginFailed
 	}
 
-	u, _ := url.Parse(baseURL)
 	cookieStr := formatCookies(jar.Cookies(u))
 
 	slog.Info("登录成功", "username", username, "cookie_len", len(cookieStr))
 	return cookieStr, nil
+}
+
+func parseCookieString(cookieStr string) []*http.Cookie {
+	var cookies []*http.Cookie
+	parts := strings.Split(cookieStr, "; ")
+	for _, part := range parts {
+		if part == "" {
+			continue
+		}
+		kv := strings.SplitN(part, "=", 2)
+		if len(kv) == 2 {
+			cookies = append(cookies, &http.Cookie{
+				Name:  kv[0],
+				Value: kv[1],
+			})
+		}
+	}
+	return cookies
 }

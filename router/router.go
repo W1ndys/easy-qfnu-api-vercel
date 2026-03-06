@@ -1,8 +1,8 @@
 package router
 
 import (
-	zhjw "github.com/W1ndys/easy-qfnu-api-vercel/api/v1/zhjw"
 	"github.com/W1ndys/easy-qfnu-api-vercel/common/response"
+	zhjw "github.com/W1ndys/easy-qfnu-api-vercel/internal_api/zhjw"
 	"github.com/W1ndys/easy-qfnu-api-vercel/middleware"
 	"github.com/gin-gonic/gin"
 )

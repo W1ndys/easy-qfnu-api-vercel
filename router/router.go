@@ -75,6 +75,7 @@ func installAPIRoutes(r *gin.Engine) {
 
 		// 教务系统登录接口（公开，不需要 AuthRequired）
 		apiV1.POST("/zhjw/login", zhjw.Login)
+		apiV1.GET("/zhjw/init", zhjw.GetInitCookie)
 
 		// 选课推荐公开接口
 		courseRecGroup := apiV1.Group("/course-recommendation")

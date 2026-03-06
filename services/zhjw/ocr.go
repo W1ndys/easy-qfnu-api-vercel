@@ -38,7 +38,7 @@ func recognizeCaptcha(imageBytes []byte) (string, error) {
 
 	model := os.Getenv("OCR_MODEL")
 	if model == "" {
-		model = "THUDM/GLM-4.1V-9B-Thinking"
+		model = "Qwen/Qwen3.5-4B"
 	}
 
 	b64Image := base64.StdEncoding.EncodeToString(imageBytes)

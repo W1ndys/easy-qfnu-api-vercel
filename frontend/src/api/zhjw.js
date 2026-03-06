@@ -7,9 +7,10 @@ export function login(data) {
   })
 }
 
-export function getGrade(cookie) {
+export function getGrade(cookie, params = {}) {
   return api.get('/v1/zhjw/grade', {
-    headers: { Authorization: cookie }
+    headers: { Authorization: cookie },
+    params
   })
 }
 
@@ -19,20 +20,23 @@ export function getCoursePlan(cookie) {
   })
 }
 
-export function getExamSchedules(cookie) {
+export function getExamSchedules(cookie, params = {}) {
   return api.get('/v1/zhjw/exam', {
-    headers: { Authorization: cookie }
+    headers: { Authorization: cookie },
+    params
   })
 }
 
-export function getSelectionResults(cookie) {
+export function getSelectionResults(cookie, params = {}) {
   return api.get('/v1/zhjw/selection', {
-    headers: { Authorization: cookie }
+    headers: { Authorization: cookie },
+    params
   })
 }
 
-export function getClassSchedules(cookie) {
+export function getClassSchedules(cookie, params = {}) {
   return api.get('/v1/zhjw/schedule', {
-    headers: { Authorization: cookie }
+    headers: { Authorization: cookie },
+    params
   })
 }

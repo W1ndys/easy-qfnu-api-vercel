@@ -45,11 +45,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { login } from '@/api/zhjw'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
+const router = useRouter()
 
 const form = ref({
   username: '',
@@ -71,7 +73,7 @@ async function handleLogin() {
 
     if (res.code === 200 && res.data?.cookie) {
       userStore.setCookie(res.data.cookie)
-      alert('登录成功！')
+      router.push('/home')
     } else {
       errorMsg.value = res.msg || '登录失败'
     }
@@ -82,4 +84,10 @@ async function handleLogin() {
     loading.value = false
   }
 }
+
+onMounted(() => {
+  if (userStore.isLoggedIn) {
+    router.replace('/home')
+  }
+})
 </script>

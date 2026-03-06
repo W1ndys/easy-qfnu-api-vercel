@@ -20,12 +20,12 @@ func GetInitCookieAndCaptcha() (cookie string, captchaBase64 string, err error) 
 	client := resty.NewWithClient(httpClient)
 	client.SetHeader("User-Agent", defaultUA)
 
-	_, err = client.R().Get(baseURL + "/")
+	_, err = client.R().Get(baseURL + "/jsxsd/")
 	if err != nil {
 		return "", "", fmt.Errorf("访问首页失败: %w", err)
 	}
 
-	captchaResp, err := client.R().Get(baseURL + "/verifycode.servlet")
+	captchaResp, err := client.R().Get(baseURL + "/jsxsd/verifycode.servlet")
 	if err != nil {
 		return "", "", fmt.Errorf("获取验证码失败: %w", err)
 	}

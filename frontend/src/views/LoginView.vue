@@ -66,8 +66,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { getCaptcha, login } from '@/api/zhjw'
+import { ref, onMounted, computed } from 'vue'
+import { getCaptchaUrl, initSession, login } from '@/api/zhjw'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
@@ -78,27 +78,18 @@ const form = ref({
   captcha: ''
 })
 
-const captchaUrl = ref('')
+const captchaKey = ref(Date.now())
 const loading = ref(false)
-const captchaLoading = ref(false)
 const errorMsg = ref('')
 
+const captchaUrl = computed(() => {
+  return `${getCaptchaUrl()}?t=${captchaKey.value}`
+})
+
 async function refreshCaptcha() {
-  if (captchaLoading.value) return
-  
-  captchaLoading.value = true
+  captchaKey.value = Date.now()
+  form.value.captcha = ''
   errorMsg.value = ''
-  
-  try {
-    const blob = await getCaptcha()
-    captchaUrl.value = URL.createObjectURL(blob)
-    form.value.captcha = ''
-  } catch (err) {
-    console.error('获取验证码失败:', err)
-    errorMsg.value = '获取验证码失败，请检查网络'
-  } finally {
-    captchaLoading.value = false
-  }
 }
 
 async function handleLogin() {
@@ -111,23 +102,17 @@ async function handleLogin() {
   errorMsg.value = ''
 
   try {
-    const res = await login({
+    await login({
       username: form.value.username,
       password: form.value.password,
       captcha: form.value.captcha
     })
-
-    if (res.code === 200) {
-      userStore.setCookie(res.data.cookie)
-      alert('登录成功！')
-    } else {
-      errorMsg.value = res.msg || '登录失败'
-      form.value.captcha = ''
-      refreshCaptcha()
-    }
+    
+    userStore.isLoggedIn.value = true
+    alert('登录成功！')
   } catch (err) {
     console.error('登录失败:', err)
-    errorMsg.value = '登录失败，请检查网络'
+    errorMsg.value = err.message || '登录失败，请检查网络'
     form.value.captcha = ''
     refreshCaptcha()
   } finally {
@@ -135,7 +120,13 @@ async function handleLogin() {
   }
 }
 
-onMounted(() => {
-  refreshCaptcha()
+onMounted(async () => {
+  try {
+    await initSession()
+    refreshCaptcha()
+  } catch (err) {
+    console.error('初始化会话失败:', err)
+    errorMsg.value = '连接服务器失败，请检查网络'
+  }
 })
 </script>

@@ -28,6 +28,10 @@
           />
         </div>
 
+        <div class="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 text-center">
+          后端使用大模型自动识别验证码，登录响应可能较慢，请耐心等待
+        </div>
+
         <div v-if="errorMsg" class="text-red-500 text-sm text-center">
           {{ errorMsg }}
         </div>

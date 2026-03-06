@@ -3,11 +3,15 @@
 node_modules/
 data/
 build/
+.vercel/
 
 # claude cli specific ignores
 .claude/
 .spec-workflow/
 .serena/
+
+# frontend build output (keep dist for vercel)
+frontend/node_modules/
 
 # Go language specific ignores
 

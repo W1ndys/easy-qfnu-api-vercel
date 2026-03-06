@@ -9,23 +9,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Login 教务系统模拟登录
 func Login(c *gin.Context) {
 	var req model.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.FailWithCode(c, response.CodeInvalidParam, "请提供用户名和密码")
+		response.FailWithCode(c, response.CodeInvalidParam, "请提供用户名、密码、验证码和初始化Cookie")
 		return
 	}
 
-	cookie, err := zhjwService.Login(req.Username, req.Password)
+	cookie, err := zhjwService.LoginWithCaptcha(req.Username, req.Password, req.Captcha, req.InitCookie)
 	if err != nil {
 		switch {
 		case errors.Is(err, zhjwService.ErrInvalidCredentials):
 			response.Fail(c, err.Error())
-		case errors.Is(err, zhjwService.ErrCaptchaFailed):
+		case errors.Is(err, zhjwService.ErrCaptchaError):
 			response.Fail(c, err.Error())
-		case errors.Is(err, zhjwService.ErrOCRServiceUnavailable):
-			response.FailWithCode(c, response.CodeTargetError, "OCR 服务不可用，请联系管理员")
 		case errors.Is(err, zhjwService.ErrLoginFailed):
 			response.Fail(c, "登录验证失败，请重试")
 		default:

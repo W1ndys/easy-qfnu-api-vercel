@@ -102,7 +102,7 @@ async function refreshCaptcha() {
   try {
     const res = await getInitCookie()
     console.log('验证码响应:', res)
-    if (res.code === 0) {
+    if (res.code === 200) {
       captchaImage.value = res.data.captcha_image
       initCookie.value = res.data.cookie
       console.log('验证码图片 base64 长度:', res.data.captcha_image?.length)
@@ -134,7 +134,7 @@ async function handleLogin() {
       init_cookie: initCookie.value
     })
 
-    if (res.code === 0) {
+    if (res.code === 200) {
       userStore.setCookie(res.data.cookie)
       alert('登录成功！')
     } else {

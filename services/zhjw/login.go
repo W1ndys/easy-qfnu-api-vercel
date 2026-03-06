@@ -102,9 +102,12 @@ func attemptLogin(client *resty.Client, username, password string) (string, erro
 	}
 
 	// 提取 cookies
+	// Path 必须设为 /jsxsd，因为教务系统的 JSESSIONID 等关键 cookie 的 Path 为 /jsxsd
+	// 如果用根路径去取，cookiejar 按 RFC 规则不会返回子路径的 cookie
 	cookies := client.GetClient().Jar.Cookies(&url.URL{
 		Scheme: "http",
 		Host:   "zhjw.qfnu.edu.cn",
+		Path:   "/jsxsd",
 	})
 	if len(cookies) == 0 {
 		return "", fmt.Errorf("登录后未获取到 cookie")

@@ -3,10 +3,6 @@
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
-      "source": "/api/proxy/:match*",
-      "destination": "http://zhjw.qfnu.edu.cn/:match*"
-    },
-    {
       "source": "/api/(.*)",
       "destination": "/api/index.go"
     },

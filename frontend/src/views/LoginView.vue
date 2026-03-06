@@ -37,22 +37,15 @@
               placeholder="请输入验证码"
               class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
+              autocomplete="off"
             />
-            <div
-              class="w-32 h-10 border border-gray-300 rounded-md flex items-center justify-center bg-gray-50 cursor-pointer overflow-hidden"
+            <img
+              :src="captchaUrl"
+              alt="验证码"
+              class="w-32 h-10 border border-gray-300 rounded-md cursor-pointer object-cover"
               @click="refreshCaptcha"
               :title="captchaLoading ? '加载中...' : '点击刷新验证码'"
-            >
-              <img
-                v-if="captchaImage"
-                :src="'data:image/png;base64,' + captchaImage"
-                alt="验证码"
-                class="w-full h-auto"
-              />
-              <span v-else class="text-xs text-gray-400">
-                {{ captchaLoading ? '加载中...' : '点击获取' }}
-              </span>
-            </div>
+            />
           </div>
         </div>
 
@@ -74,11 +67,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { getInitCookie, login } from '@/api/zhjw'
+import { getZhjwCaptchaUrl, login } from '@/api/zhjw'
 import { useUserStore } from '@/stores/user'
 
-const router = useRouter()
 const userStore = useUserStore()
 
 const form = ref({
@@ -87,39 +78,26 @@ const form = ref({
   captcha: ''
 })
 
-const captchaImage = ref('')
-const initCookie = ref('')
+const captchaUrl = ref('')
 const loading = ref(false)
 const captchaLoading = ref(false)
 const errorMsg = ref('')
 
-async function refreshCaptcha() {
+function refreshCaptcha() {
   if (captchaLoading.value) return
   
   captchaLoading.value = true
   errorMsg.value = ''
+  captchaUrl.value = getZhjwCaptchaUrl()
   
-  try {
-    const res = await getInitCookie()
-    console.log('验证码响应:', res)
-    if (res.code === 200) {
-      captchaImage.value = res.data.captcha_image
-      initCookie.value = res.data.cookie
-      console.log('验证码图片 base64 长度:', res.data.captcha_image?.length)
-    } else {
-      errorMsg.value = res.msg || '获取验证码失败'
-    }
-  } catch (err) {
-    console.error('获取验证码失败:', err)
-    errorMsg.value = '获取验证码失败，请检查网络'
-  } finally {
+  setTimeout(() => {
     captchaLoading.value = false
-  }
+  }, 500)
 }
 
 async function handleLogin() {
-  if (!initCookie.value) {
-    errorMsg.value = '请先获取验证码'
+  if (!form.value.captcha) {
+    errorMsg.value = '请输入验证码'
     return
   }
 
@@ -130,8 +108,7 @@ async function handleLogin() {
     const res = await login({
       username: form.value.username,
       password: form.value.password,
-      captcha: form.value.captcha,
-      init_cookie: initCookie.value
+      captcha: form.value.captcha
     })
 
     if (res.code === 200) {
@@ -139,10 +116,12 @@ async function handleLogin() {
       alert('登录成功！')
     } else {
       errorMsg.value = res.msg || '登录失败'
+      form.value.captcha = ''
       refreshCaptcha()
     }
   } catch (err) {
     errorMsg.value = '登录失败，请检查网络'
+    form.value.captcha = ''
     refreshCaptcha()
   } finally {
     loading.value = false

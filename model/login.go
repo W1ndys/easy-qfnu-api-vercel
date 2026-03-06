@@ -1,10 +1,9 @@
 package model
 
 type LoginRequest struct {
-	Username   string `json:"username" binding:"required"`
-	Password   string `json:"password" binding:"required"`
-	Captcha    string `json:"captcha" binding:"required"`
-	InitCookie string `json:"init_cookie" binding:"required"`
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	Captcha  string `json:"captcha" binding:"required"`
 }
 
 type LoginResponse struct {

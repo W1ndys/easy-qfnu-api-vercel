@@ -25,7 +25,6 @@ func InitRouter() *gin.Engine {
 
 	{
 		apiV1.POST("/zhjw/login", zhjw.Login)
-		apiV1.GET("/zhjw/init", zhjw.GetInitCookie)
 	}
 
 	zhjwGroup := apiV1.Group("/zhjw")

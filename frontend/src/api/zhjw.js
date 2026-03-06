@@ -1,5 +1,7 @@
 import api from './request'
 
+const ZHJW_BASE = 'http://zhjw.qfnu.edu.cn'
+
 export function getInitCookie() {
   return api.get('/v1/zhjw/init')
 }
@@ -36,4 +38,8 @@ export function getClassSchedules(cookie) {
   return api.get('/v1/zhjw/schedule', {
     headers: { Authorization: cookie }
   })
+}
+
+export function getZhjwCaptchaUrl() {
+  return `${ZHJW_BASE}/jsxsd/verifycode.servlet?t=${Date.now()}`
 }

@@ -1,0 +1,48 @@
+version: "3"
+
+vars:
+  APP_NAME: easy-qfnu-api-lite
+
+tasks:
+  dev:
+    desc: 同时启动前后端开发服务器
+    deps: [dev:frontend, dev:backend]
+
+  dev:frontend:
+    desc: 启动前端开发服务器
+    dir: frontend
+    cmds:
+      - npm run dev
+
+  dev:backend:
+    desc: 启动后端开发服务器
+    cmds:
+      - go run .
+
+  build:frontend:
+    desc: 构建前端
+    dir: frontend
+    cmds:
+      - npm install
+      - npm run build
+
+  build:
+    desc: 完整构建（前端 + 后端）
+    deps: [build:frontend]
+    cmds:
+      - go build -o {{.APP_NAME}} .
+
+  clean:
+    desc: 清理构建产物
+    cmds:
+      - powershell -NoProfile -Command "Remove-Item -Force -ErrorAction SilentlyContinue '{{.APP_NAME}}','{{.APP_NAME}}.exe'; if (Test-Path 'frontend/dist') { Get-ChildItem 'frontend/dist' -Force | Where-Object { $_.Name -ne '.gitkeep' } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue }"
+
+  test:
+    desc: 运行 Go 测试
+    cmds:
+      - go test ./...
+
+  lint:
+    desc: 运行 Go 代码检查
+    cmds:
+      - go vet ./...

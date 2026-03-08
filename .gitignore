@@ -4,15 +4,20 @@ node_modules/
 data/
 build/
 .vercel/
-dist
 
 # claude cli specific ignores
 .claude/
 .spec-workflow/
 .serena/
 
-# frontend build output  
+# frontend build output
 frontend/node_modules/
+frontend/dist/*
+!frontend/dist/.gitkeep
+
+# app binaries
+easy-qfnu-api-lite
+easy-qfnu-api-lite.exe
 
 # Go language specific ignores
 

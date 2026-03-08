@@ -2,75 +2,49 @@ package zhjw
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/go-resty/resty/v2"
 )
 
-type chatMessage struct {
-	Role    string      `json:"role"`
-	Content interface{} `json:"content"`
+type ocrRequest struct {
+	Image  string `json:"image"`
+	PngFix bool   `json:"png_fix"`
 }
 
-type chatRequest struct {
-	Model    string        `json:"model"`
-	Messages []chatMessage `json:"messages"`
+type ocrResponseData struct {
+	Text string `json:"text"`
 }
 
-type chatChoice struct {
-	Message struct {
-		Content string `json:"content"`
-	} `json:"message"`
-}
-
-type chatResponse struct {
-	Choices []chatChoice `json:"choices"`
+type ocrResponse struct {
+	Success bool             `json:"success"`
+	Code    int              `json:"code"`
+	Message string           `json:"message"`
+	Data    *ocrResponseData `json:"data"`
 }
 
 func recognizeCaptcha(imageBytes []byte) (string, error) {
-	apiKey := os.Getenv("SILICONFLOW_API_KEY")
-	if apiKey == "" {
-		return "", fmt.Errorf("未配置 SILICONFLOW_API_KEY 环境变量")
+	ocrAPIURL := strings.TrimSpace(os.Getenv("OCR_API_URL"))
+	if ocrAPIURL == "" {
+		return "", fmt.Errorf("未配置 OCR_API_URL 环境变量")
+	}
+	ocrAPIURL = strings.TrimRight(ocrAPIURL, "/")
+
+	reqBody := ocrRequest{
+		Image:  base64.StdEncoding.EncodeToString(imageBytes),
+		PngFix: false,
 	}
 
-	model := os.Getenv("OCR_MODEL")
-	if model == "" {
-		model = "deepseek-ai/DeepSeek-OCR"
-	}
-
-	b64Image := base64.StdEncoding.EncodeToString(imageBytes)
-	dataURL := "data:image/jpeg;base64," + b64Image
-
-	reqBody := chatRequest{
-		Model: model,
-		Messages: []chatMessage{
-			{
-				Role: "user",
-				Content: []map[string]interface{}{
-					{
-						"type": "image_url",
-						"image_url": map[string]string{
-							"url": dataURL,
-						},
-					},
-					{
-						"type": "text",
-						"text": "请识别这张验证码图片中的字符，只返回验证码文本，不要返回任何其他内容。",
-					},
-				},
-			},
-		},
-	}
-
-	client := resty.New()
+	var ocrResp ocrResponse
+	client := resty.New().SetTimeout(10 * time.Second)
 	resp, err := client.R().
-		SetHeader("Authorization", "Bearer "+apiKey).
 		SetHeader("Content-Type", "application/json").
+		SetResult(&ocrResp).
 		SetBody(reqBody).
-		Post("https://api.siliconflow.cn/v1/chat/completions")
+		Post(ocrAPIURL + "/ocr/base64")
 
 	if err != nil {
 		return "", fmt.Errorf("调用 OCR 服务失败: %w", err)
@@ -80,15 +54,22 @@ func recognizeCaptcha(imageBytes []byte) (string, error) {
 		return "", fmt.Errorf("OCR 服务返回错误状态码 %d: %s", resp.StatusCode(), resp.String())
 	}
 
-	var chatResp chatResponse
-	if err := json.Unmarshal(resp.Body(), &chatResp); err != nil {
-		return "", fmt.Errorf("解析 OCR 响应失败: %w", err)
+	if !ocrResp.Success {
+		msg := strings.TrimSpace(ocrResp.Message)
+		if msg == "" {
+			msg = "未知错误"
+		}
+		return "", fmt.Errorf("OCR 服务返回失败(code=%d): %s", ocrResp.Code, msg)
 	}
 
-	if len(chatResp.Choices) == 0 {
-		return "", fmt.Errorf("OCR 服务未返回结果")
+	if ocrResp.Data == nil {
+		return "", fmt.Errorf("OCR 服务未返回 data 字段")
 	}
 
-	code := strings.TrimSpace(chatResp.Choices[0].Message.Content)
+	code := strings.TrimSpace(ocrResp.Data.Text)
+	if code == "" {
+		return "", fmt.Errorf("OCR 服务未返回有效验证码")
+	}
+
 	return code, nil
 }

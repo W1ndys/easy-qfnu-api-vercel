@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/W1ndys/easy-qfnu-api-vercel/common/response"
+	"github.com/W1ndys/easy-qfnu-api-lite/common/response"
 	"github.com/gin-gonic/gin"
 )
 

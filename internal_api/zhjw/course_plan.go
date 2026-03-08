@@ -3,9 +3,9 @@ package zhjw
 import (
 	"errors"
 
-	"github.com/W1ndys/easy-qfnu-api-vercel/common/request"
-	"github.com/W1ndys/easy-qfnu-api-vercel/common/response"
-	zhjwService "github.com/W1ndys/easy-qfnu-api-vercel/services/zhjw"
+	"github.com/W1ndys/easy-qfnu-api-lite/common/request"
+	"github.com/W1ndys/easy-qfnu-api-lite/common/response"
+	zhjwService "github.com/W1ndys/easy-qfnu-api-lite/services/zhjw"
 	"github.com/gin-gonic/gin"
 )
 

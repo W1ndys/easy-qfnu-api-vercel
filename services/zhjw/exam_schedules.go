@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/W1ndys/easy-qfnu-api-vercel/model"
+	"github.com/W1ndys/easy-qfnu-api-lite/model"
 )
 
 // FetchExamSchedules 抓取并解析成绩，返回包含统计信息的响应

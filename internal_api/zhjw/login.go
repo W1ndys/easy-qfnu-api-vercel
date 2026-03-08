@@ -1,8 +1,8 @@
 package zhjw
 
 import (
-	"github.com/W1ndys/easy-qfnu-api-vercel/common/response"
-	zhjwService "github.com/W1ndys/easy-qfnu-api-vercel/services/zhjw"
+	"github.com/W1ndys/easy-qfnu-api-lite/common/response"
+	zhjwService "github.com/W1ndys/easy-qfnu-api-lite/services/zhjw"
 	"github.com/gin-gonic/gin"
 )
 

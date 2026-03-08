@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/W1ndys/easy-qfnu-api-vercel/model"
+	"github.com/W1ndys/easy-qfnu-api-lite/model"
 )
 
 // FetchClassSchedules 抓取并解析课程表

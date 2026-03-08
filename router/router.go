@@ -1,13 +1,19 @@
 package router
 
 import (
-	"github.com/W1ndys/easy-qfnu-api-vercel/common/response"
-	zhjw "github.com/W1ndys/easy-qfnu-api-vercel/internal_api/zhjw"
-	"github.com/W1ndys/easy-qfnu-api-vercel/middleware"
+	"embed"
+	"io/fs"
+	"net/http"
+	"path"
+	"strings"
+
+	"github.com/W1ndys/easy-qfnu-api-lite/common/response"
+	zhjw "github.com/W1ndys/easy-qfnu-api-lite/internal_api/zhjw"
+	"github.com/W1ndys/easy-qfnu-api-lite/middleware"
 	"github.com/gin-gonic/gin"
 )
 
-func InitRouter() *gin.Engine {
+func InitRouter(frontendFS embed.FS) *gin.Engine {
 	r := gin.Default()
 
 	r.Use(middleware.Recovery())
@@ -36,5 +42,49 @@ func InitRouter() *gin.Engine {
 		zhjwGroup.GET("/schedule", zhjw.GetClassSchedules)
 	}
 
+	distFS, err := fs.Sub(frontendFS, "frontend/dist")
+	if err != nil {
+		panic(err)
+	}
+
+	r.NoRoute(func(c *gin.Context) {
+		requestPath := c.Request.URL.Path
+		if requestPath == "/api" || strings.HasPrefix(requestPath, "/api/") {
+			response.ResourceNotFound(c)
+			return
+		}
+
+		cleanPath := strings.TrimPrefix(path.Clean("/"+requestPath), "/")
+		if cleanPath == "" || cleanPath == "." {
+			cleanPath = "index.html"
+		}
+
+		if serveFromEmbeddedDist(c, distFS, cleanPath) {
+			return
+		}
+
+		if serveFromEmbeddedDist(c, distFS, "index.html") {
+			return
+		}
+
+		c.String(http.StatusNotFound, "frontend dist not found")
+	})
+
 	return r
+}
+
+func serveFromEmbeddedDist(c *gin.Context, distFS fs.FS, filePath string) bool {
+	file, err := distFS.Open(filePath)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+
+	info, err := file.Stat()
+	if err != nil || info.IsDir() {
+		return false
+	}
+
+	c.FileFromFS(filePath, http.FS(distFS))
+	return true
 }

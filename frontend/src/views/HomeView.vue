@@ -33,7 +33,7 @@
         </div>
       </main>
 
-      <footer class="pt-8 text-center text-xs text-gray-400">easy-qfnu-api-vercel · v1</footer>
+      <footer class="pt-8 text-center text-xs text-gray-400">easy-qfnu-api-lite · v1</footer>
     </div>
   </div>
 </template>

@@ -3,6 +3,7 @@ package router
 import (
 	"embed"
 	"io/fs"
+	"mime"
 	"net/http"
 	"path"
 	"strings"
@@ -47,23 +48,22 @@ func InitRouter(frontendFS embed.FS) *gin.Engine {
 		panic(err)
 	}
 
+	assetsFS, err := fs.Sub(distFS, "assets")
+	if err != nil {
+		panic(err)
+	}
+
+	r.StaticFS("/assets", http.FS(assetsFS))
+	r.StaticFileFS("/favicon.svg", "favicon.svg", http.FS(distFS))
+
 	r.NoRoute(func(c *gin.Context) {
-		requestPath := c.Request.URL.Path
+		requestPath := path.Clean("/" + c.Request.URL.Path)
 		if requestPath == "/api" || strings.HasPrefix(requestPath, "/api/") {
 			response.ResourceNotFound(c)
 			return
 		}
 
-		cleanPath := strings.TrimPrefix(path.Clean("/"+requestPath), "/")
-		if cleanPath == "" || cleanPath == "." {
-			cleanPath = "index.html"
-		}
-
-		if serveFromEmbeddedDist(c, distFS, cleanPath) {
-			return
-		}
-
-		if serveFromEmbeddedDist(c, distFS, "index.html") {
+		if serveEmbeddedFile(c, distFS, "index.html") {
 			return
 		}
 
@@ -73,18 +73,22 @@ func InitRouter(frontendFS embed.FS) *gin.Engine {
 	return r
 }
 
-func serveFromEmbeddedDist(c *gin.Context, distFS fs.FS, filePath string) bool {
-	file, err := distFS.Open(filePath)
+func serveEmbeddedFile(c *gin.Context, distFS fs.FS, filePath string) bool {
+	cleanPath := strings.TrimPrefix(path.Clean("/"+filePath), "/")
+	if cleanPath == "" || cleanPath == "." {
+		return false
+	}
+
+	data, err := fs.ReadFile(distFS, cleanPath)
 	if err != nil {
 		return false
 	}
-	defer file.Close()
 
-	info, err := file.Stat()
-	if err != nil || info.IsDir() {
-		return false
+	contentType := mime.TypeByExtension(path.Ext(cleanPath))
+	if contentType == "" {
+		contentType = http.DetectContentType(data)
 	}
 
-	c.FileFromFS(filePath, http.FS(distFS))
+	c.Data(http.StatusOK, contentType, data)
 	return true
 }

@@ -2,13 +2,13 @@ package main
 
 import (
 	"embed"
+	"log"
 	"os"
 	"strings"
 
+	"github.com/W1ndys/easy-qfnu-api-lite/router"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-
-	"github.com/W1ndys/easy-qfnu-api-lite/router"
 )
 
 //go:embed all:frontend/dist
@@ -31,6 +31,6 @@ func main() {
 	if port == "" {
 		port = "8141"
 	}
-
+	log.Printf("Starting server on port %s in %s mode...\n", port, ginMode)
 	r.Run("0.0.0.0:" + port)
 }

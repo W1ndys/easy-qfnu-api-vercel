@@ -7,7 +7,7 @@ QFNU 综合校园服务网关，采用 Go 单二进制自托管部署模式。
 - 前端：Vue 3 SPA，构建产物输出到 `frontend/dist`
 - 后端：Gin API 服务
 - 打包方式：`go:embed` 将 `frontend/dist` 内嵌到 Go 二进制
-- OCR：对接自建 `ddddocr-api`（`POST /ocr/base64`）
+- OCR：对接自建 `ddddocr-api`（`POST /ocr`，表单字段：`image`、`probability`、`png_fix`）
 
 ## 环境依赖
 

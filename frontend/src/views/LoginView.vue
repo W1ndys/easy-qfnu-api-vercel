@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-white rounded-lg shadow-md p-6">
       <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">
-        QFNU 教务系统登录
+        曲奇助手登录
       </h1>
 
       <form @submit.prevent="handleLogin" class="space-y-4">

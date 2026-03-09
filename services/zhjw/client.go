@@ -4,7 +4,9 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/W1ndys/easy-qfnu-api-lite/pkg/logger"
 	"github.com/go-resty/resty/v2"
+	"go.uber.org/zap"
 )
 
 // ErrCookieExpired 定义一个哨兵错误 (Sentinel Error)
@@ -28,18 +30,27 @@ func NewClient(Authorization string) *resty.Client {
 	client.OnAfterResponse(func(c *resty.Client, resp *resty.Response) error {
 		// 获取响应内容
 		body := resp.String()
+		requestURL := resp.Request.URL
 
 		// 统一检查规则：
 		// 教务系统 Cookie 失效时，通常会重定向到登录页，或者 body 里包含特定文字
 		// 这里的判断条件根据你的实际情况添加
 		if resp.StatusCode() != 200 ||
 			strings.Contains(body, "用户登录") {
+			logger.L().Warn("教务系统 Cookie 已失效或响应异常",
+				zap.String("url", requestURL),
+				zap.Int("status", resp.StatusCode()),
+			)
 
 			// 如果命中，返回特定错误
 			// 注意：这里返回 error 会导致后续的 API 请求直接报错返回，
 			// 不会再执行 fetchGrade 里的 parseHtml 逻辑
 			return ErrCookieExpired
 		} else if strings.Contains(body, "未查询到数据") {
+			logger.L().Info("教务系统响应未查询到数据",
+				zap.String("url", requestURL),
+				zap.Int("status", resp.StatusCode()),
+			)
 			return ErrResourceNotFound
 		}
 

@@ -3,17 +3,20 @@ package zhjw
 import (
 	"bytes"
 	"fmt"
-	"log/slog"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/W1ndys/easy-qfnu-api-lite/model"
+	"github.com/W1ndys/easy-qfnu-api-lite/pkg/logger"
+	"go.uber.org/zap"
 )
 
 // FetchGrades 抓取并解析成绩，返回包含统计信息的响应
 func FetchGrades(cookie string, term string, courseType string, courseName string, displayType string) (*model.GradeResponse, error) {
+	start := time.Now()
 
 	// 课程类型：支持中文名称或ID，统一转换为ID
 	courseType = model.GetCourseTypeID(courseType)
@@ -30,31 +33,44 @@ func FetchGrades(cookie string, term string, courseType string, courseName strin
 	}
 
 	// 记录重要的业务行为
-	slog.Info("开始抓取成绩",
-		"term", term,
-		"course_name", courseName,
-		"course_type", courseType,
-		"display_type", displayType,
-		"cookie_len", len(cookie), // 不要记录完整 cookie，记录长度即可，保护隐私
+	log := logger.L().With(
+		zap.String("term", term),
+		zap.String("course_name", courseName),
+		zap.String("course_type", courseType),
+		zap.String("display_type", displayType),
+		zap.Int("cookie_len", len(cookie)),
 	)
+	log.Info("开始抓取成绩")
+
 	// 发起 POST 请求
 	resp, err := client.R().
 		SetFormData(formData).
 		Post(targetURL)
 
-	// 错误处理
 	if err != nil {
+		log.Error("抓取成绩失败",
+			zap.Error(err),
+			zap.Duration("latency", time.Since(start)),
+		)
 		return nil, err // 遇到错误立刻返回
 	}
 
 	// 解析 HTML (调用内部私有函数)
 	grades, err := parseGradesHtml(resp.Body())
 	if err != nil {
+		log.Error("解析成绩失败",
+			zap.Error(err),
+			zap.Duration("latency", time.Since(start)),
+		)
 		return nil, err
 	}
 
 	// 计算统计信息
 	response := calculateStats(grades)
+	log.Info("抓取成绩完成",
+		zap.Int("record_count", len(grades)),
+		zap.Duration("latency", time.Since(start)),
+	)
 	return response, nil
 }
 

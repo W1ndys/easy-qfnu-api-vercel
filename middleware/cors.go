@@ -5,7 +5,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/W1ndys/easy-qfnu-api-lite/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // Cors 处理跨域请求,支持 options 访问
@@ -42,6 +44,20 @@ func Cors() gin.HandlerFunc {
 			if allowOrigin != "*" {
 				c.Header("Access-Control-Allow-Credentials", "true")
 			}
+
+			logger.L().Debug("CORS 请求通过",
+				zap.String("request_id", c.GetString(RequestIDKey)),
+				zap.String("origin", origin),
+				zap.String("path", c.Request.URL.Path),
+				zap.String("method", method),
+			)
+		} else if origin != "" {
+			logger.L().Warn("CORS 请求被拒绝",
+				zap.String("request_id", c.GetString(RequestIDKey)),
+				zap.String("origin", origin),
+				zap.String("path", c.Request.URL.Path),
+				zap.String("method", method),
+			)
 		}
 
 		// 放行所有 OPTIONS 方法

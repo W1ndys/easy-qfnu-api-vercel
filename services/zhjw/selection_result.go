@@ -2,15 +2,18 @@ package zhjw
 
 import (
 	"bytes"
-	"log/slog"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/W1ndys/easy-qfnu-api-lite/model"
+	"github.com/W1ndys/easy-qfnu-api-lite/pkg/logger"
+	"go.uber.org/zap"
 )
 
 // FetchSelectionResults 抓取并解析成绩，返回包含统计信息的响应
 func FetchSelectionResults(cookie string, term string) ([]model.SelectionResult, error) {
+	start := time.Now()
 
 	// 使用工厂函数创建 Client (自带检查功能)
 	client := NewClient(cookie)
@@ -22,26 +25,39 @@ func FetchSelectionResults(cookie string, term string) ([]model.SelectionResult,
 	}
 
 	// 记录重要的业务行为
-	slog.Info("开始抓取选课结果",
-		"term", term,
-		"cookie_len", len(cookie), // 不要记录完整 cookie，记录长度即可，保护隐私
+	log := logger.L().With(
+		zap.String("term", term),
+		zap.Int("cookie_len", len(cookie)),
 	)
+	log.Info("开始抓取选课结果")
+
 	// 发起 POST 请求
 	resp, err := client.R().
 		SetFormData(formData).
 		Post(targetURL)
 
-	// 错误处理
 	if err != nil {
+		log.Error("抓取选课结果失败",
+			zap.Error(err),
+			zap.Duration("latency", time.Since(start)),
+		)
 		return nil, err // 遇到错误立刻返回
 	}
 
 	// 解析 HTML (调用内部私有函数)
 	selectionResults, err := parseSelectionResultsHtml(resp.Body())
 	if err != nil {
+		log.Error("解析选课结果失败",
+			zap.Error(err),
+			zap.Duration("latency", time.Since(start)),
+		)
 		return nil, err
 	}
 
+	log.Info("抓取选课结果完成",
+		zap.Int("record_count", len(selectionResults)),
+		zap.Duration("latency", time.Since(start)),
+	)
 	return selectionResults, nil
 }
 

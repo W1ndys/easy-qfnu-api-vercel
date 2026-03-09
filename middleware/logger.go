@@ -1,10 +1,11 @@
 package middleware
 
 import (
-	"log/slog"
 	"time"
 
+	"github.com/W1ndys/easy-qfnu-api-lite/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // RequestLogger 记录每次 HTTP 请求的详细信息
@@ -23,29 +24,33 @@ func RequestLogger() gin.HandlerFunc {
 		method := c.Request.Method
 		statusCode := c.Writer.Status()
 		errorMessage := c.Errors.ByType(gin.ErrorTypePrivate).String()
+		requestID := c.GetString(RequestIDKey)
+		bodySize := c.Writer.Size()
+		userAgent := c.Request.UserAgent()
 
-		// 组装 Log 属性
-		args := []any{
-			slog.String("method", method),     // 请求方法
-			slog.String("path", path),         // 请求路径
-			slog.Int("status", statusCode),    // 响应状态码
-			slog.String("ip", clientIP),       // 客户端 IP
-			slog.Duration("latency", latency), // 请求耗时
+		fields := []zap.Field{
+			zap.String("request_id", requestID),
+			zap.String("method", method),
+			zap.String("path", path),
+			zap.Int("status", statusCode),
+			zap.String("ip", clientIP),
+			zap.Duration("latency", latency),
+			zap.String("user_agent", userAgent),
+			zap.Int("body_size", bodySize),
 		}
 		if raw != "" {
-			args = append(args, slog.String("query", raw))
+			fields = append(fields, zap.String("query", raw))
 		}
 		if errorMessage != "" {
-			args = append(args, slog.String("error", errorMessage))
+			fields = append(fields, zap.String("error", errorMessage))
 		}
 
-		// 根据状态码决定日志级别
 		if statusCode >= 500 {
-			slog.Error("[请求服务器错误]", args...)
+			logger.L().Error("[请求服务器错误]", fields...)
 		} else if statusCode >= 400 {
-			slog.Warn("[请求客户端错误]", args...)
+			logger.L().Warn("[请求客户端错误]", fields...)
 		} else {
-			slog.Info("[响应成功]", args...)
+			logger.L().Info("[响应成功]", fields...)
 		}
 	}
 }

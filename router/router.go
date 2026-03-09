@@ -11,13 +11,16 @@ import (
 	"github.com/W1ndys/easy-qfnu-api-lite/common/response"
 	zhjw "github.com/W1ndys/easy-qfnu-api-lite/internal_api/zhjw"
 	"github.com/W1ndys/easy-qfnu-api-lite/middleware"
+	"github.com/W1ndys/easy-qfnu-api-lite/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func InitRouter(frontendFS embed.FS) *gin.Engine {
-	r := gin.Default()
+	r := gin.New()
 
 	r.Use(middleware.Recovery())
+	r.Use(middleware.RequestID())
 	r.Use(middleware.RequestLogger())
 	r.Use(middleware.Cors())
 
@@ -69,6 +72,11 @@ func InitRouter(frontendFS embed.FS) *gin.Engine {
 
 		c.String(http.StatusNotFound, "frontend dist not found")
 	})
+
+	logger.L().Info("router initialized",
+		zap.Bool("has_embedded_frontend", true),
+		zap.String("api_prefix", "/api/v1"),
+	)
 
 	return r
 }

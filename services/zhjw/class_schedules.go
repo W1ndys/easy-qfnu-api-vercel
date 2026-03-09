@@ -2,17 +2,20 @@ package zhjw
 
 import (
 	"bytes"
-	"log/slog"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/W1ndys/easy-qfnu-api-lite/model"
+	"github.com/W1ndys/easy-qfnu-api-lite/pkg/logger"
+	"go.uber.org/zap"
 )
 
 // FetchClassSchedules 抓取并解析课程表
 func FetchClassSchedules(cookie string, date string) (*model.ClassScheduleResponse, error) {
+	start := time.Now()
 
 	// 使用工厂函数创建 Client (自带检查功能)
 	client := NewClient(cookie)
@@ -23,10 +26,12 @@ func FetchClassSchedules(cookie string, date string) (*model.ClassScheduleRespon
 	}
 
 	// 记录重要的业务行为
-	slog.Info("开始抓取课程表",
-		"date", date,
-		"cookie_len", len(cookie), // 不要记录完整 cookie，记录长度即可，保护隐私
+	log := logger.L().With(
+		zap.String("date", date),
+		zap.Int("cookie_len", len(cookie)),
 	)
+	log.Info("开始抓取课程表")
+
 	// 发起 POST 请求
 	resp, err := client.R().
 		SetFormData(formData).
@@ -34,13 +39,29 @@ func FetchClassSchedules(cookie string, date string) (*model.ClassScheduleRespon
 
 	// log.Printf("响应内容：%s", resp.Body())
 
-	// 错误处理
 	if err != nil {
+		log.Error("抓取课程表失败",
+			zap.Error(err),
+			zap.Duration("latency", time.Since(start)),
+		)
 		return nil, err // 遇到错误立刻返回
 	}
 
 	// 解析 HTML
-	return parseClassSchedulesHtml(resp.Body())
+	result, err := parseClassSchedulesHtml(resp.Body())
+	if err != nil {
+		log.Error("解析课程表失败",
+			zap.Error(err),
+			zap.Duration("latency", time.Since(start)),
+		)
+		return nil, err
+	}
+
+	log.Info("抓取课程表完成",
+		zap.Int("record_count", len(result.Courses)),
+		zap.Duration("latency", time.Since(start)),
+	)
+	return result, nil
 }
 
 // parseClassSchedulesHtml 解析课程表 HTML

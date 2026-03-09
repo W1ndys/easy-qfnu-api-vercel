@@ -5,13 +5,20 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/W1ndys/easy-qfnu-api-lite/model"
+	"github.com/W1ndys/easy-qfnu-api-lite/pkg/logger"
+	"go.uber.org/zap"
 )
 
 // FetchCoursePlan 获取培养方案
 func FetchCoursePlan(token string) (*model.CoursePlanResponse, error) {
+	start := time.Now()
+	log := logger.L().With(zap.Int("cookie_len", len(token)))
+	log.Info("开始抓取培养方案")
+
 	// 1. 请求页面
 	url := "http://zhjw.qfnu.edu.cn/jsxsd/pyfa/topyfamx"
 	client := NewClient(token)
@@ -19,12 +26,20 @@ func FetchCoursePlan(token string) (*model.CoursePlanResponse, error) {
 		Get(url)
 
 	if err != nil {
+		log.Error("抓取培养方案失败",
+			zap.Error(err),
+			zap.Duration("latency", time.Since(start)),
+		)
 		return nil, fmt.Errorf("request failed: %w", err)
 	}
 
 	// 2. 解析 HTML
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(resp.String()))
 	if err != nil {
+		log.Error("解析培养方案失败",
+			zap.Error(err),
+			zap.Duration("latency", time.Since(start)),
+		)
 		return nil, fmt.Errorf("parse html failed: %w", err)
 	}
 
@@ -44,7 +59,21 @@ func FetchCoursePlan(token string) (*model.CoursePlanResponse, error) {
 	// 5. 解析课程列表
 	response.Groups = parseCourseGroups(doc)
 
+	log.Info("抓取培养方案完成",
+		zap.Int("group_count", len(response.Groups)),
+		zap.Int("course_count", countCoursePlanCourses(response.Groups)),
+		zap.Duration("latency", time.Since(start)),
+	)
+
 	return response, nil
+}
+
+func countCoursePlanCourses(groups []model.CourseGroup) int {
+	total := 0
+	for _, group := range groups {
+		total += len(group.Courses)
+	}
+	return total
 }
 
 func parseCourseGroups(doc *goquery.Document) []model.CourseGroup {

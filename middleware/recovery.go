@@ -2,10 +2,11 @@ package middleware
 
 import (
 	"fmt"
-	"log/slog"
 	"runtime/debug"
 
+	"github.com/W1ndys/easy-qfnu-api-lite/pkg/logger"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func Recovery() gin.HandlerFunc {
@@ -16,12 +17,14 @@ func Recovery() gin.HandlerFunc {
 				errMsg := fmt.Sprintf("%v", err)
 				path := c.Request.URL.Path
 				method := c.Request.Method
+				requestID := c.GetString(RequestIDKey)
 
-				slog.Error("服务器 Panic",
-					"error", errMsg,
-					"path", path,
-					"method", method,
-					"stack", stack,
+				logger.L().Error("服务器 Panic",
+					zap.String("request_id", requestID),
+					zap.String("error", errMsg),
+					zap.String("path", path),
+					zap.String("method", method),
+					zap.String("stacktrace", stack),
 				)
 
 				c.AbortWithStatusJSON(500, gin.H{

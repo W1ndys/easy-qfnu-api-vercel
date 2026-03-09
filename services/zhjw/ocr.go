@@ -8,7 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/W1ndys/easy-qfnu-api-lite/pkg/logger"
 	"github.com/go-resty/resty/v2"
+	"go.uber.org/zap"
 )
 
 type ocrLegacyResponseData struct {
@@ -38,6 +40,11 @@ func recognizeCaptcha(imageBytes []byte) (string, error) {
 		return "", fmt.Errorf("未配置 OCR_API_URL 环境变量")
 	}
 	ocrAPIURL = normalizeOCRURL(ocrAPIURL)
+	start := time.Now()
+
+	logger.L().Debug("开始调用 OCR 服务",
+		zap.String("ocr_url", ocrAPIURL),
+	)
 
 	client := resty.New().SetTimeout(10 * time.Second)
 	resp, err := client.R().
@@ -49,17 +56,40 @@ func recognizeCaptcha(imageBytes []byte) (string, error) {
 		Post(ocrAPIURL)
 
 	if err != nil {
+		logger.L().Error("调用 OCR 服务失败",
+			zap.String("ocr_url", ocrAPIURL),
+			zap.Error(err),
+			zap.Duration("latency", time.Since(start)),
+		)
 		return "", fmt.Errorf("调用 OCR 服务失败: %w", err)
 	}
 
 	if resp.StatusCode() != 200 {
+		logger.L().Error("OCR 服务返回非 200 状态码",
+			zap.String("ocr_url", ocrAPIURL),
+			zap.Int("status", resp.StatusCode()),
+			zap.String("response_snippet", truncateText(resp.String(), 200)),
+			zap.Duration("latency", time.Since(start)),
+		)
 		return "", fmt.Errorf("OCR 服务返回错误状态码 %d: %s", resp.StatusCode(), resp.String())
 	}
 
 	code, parseErr := parseOCRCode(resp.Body())
 	if parseErr != nil {
+		logger.L().Error("OCR 响应解析失败",
+			zap.String("ocr_url", ocrAPIURL),
+			zap.Error(parseErr),
+			zap.String("response_snippet", truncateText(resp.String(), 200)),
+			zap.Duration("latency", time.Since(start)),
+		)
 		return "", fmt.Errorf("OCR 响应解析失败: %w，响应体: %s", parseErr, truncateText(resp.String(), 200))
 	}
+
+	logger.L().Info("OCR 识别成功",
+		zap.String("ocr_url", ocrAPIURL),
+		zap.String("captcha", code),
+		zap.Duration("latency", time.Since(start)),
+	)
 
 	return code, nil
 }

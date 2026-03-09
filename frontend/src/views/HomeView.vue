@@ -1,9 +1,9 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <div class="mx-auto flex min-h-screen max-w-lg flex-col px-4 py-6 pb-[max(env(safe-area-inset-bottom),1rem)]">
-      <header class="mb-8 flex items-start justify-between gap-4">
+      <header class="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">QFNU 教务助手</h1>
+          <h1 class="text-2xl font-bold text-gray-900">曲奇助手</h1>
           <p class="mt-2 text-sm text-gray-500">快速访问常用教务查询功能</p>
         </div>
         <button
@@ -14,6 +14,10 @@
           退出登录
         </button>
       </header>
+
+      <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        该网站目前处于开发初期，可能不稳定。
+      </div>
 
       <main class="flex-1">
         <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">

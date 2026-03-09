@@ -2,15 +2,34 @@ version: "3"
 
 vars:
   APP_NAME: easy-qfnu-api-lite
+  FRONTEND_DIR: frontend
+  DEPLOY_SCRIPT: scripts/deploy.ps1
 
 tasks:
+  default:
+    desc: 列出可用任务
+    cmds:
+      - task --list
+
+  frontend:deps:
+    desc: 安装前端依赖
+    dir: "{{.FRONTEND_DIR}}"
+    sources:
+      - package.json
+      - package-lock.json
+    generates:
+      - node_modules/.package-lock.json
+    cmds:
+      - npm ci
+
   dev:
     desc: 同时启动前后端开发服务器
     deps: [dev:frontend, dev:backend]
 
   dev:frontend:
     desc: 启动前端开发服务器
-    dir: frontend
+    deps: [frontend:deps]
+    dir: "{{.FRONTEND_DIR}}"
     cmds:
       - npm run dev
 
@@ -21,21 +40,34 @@ tasks:
 
   build:frontend:
     desc: 构建前端
-    dir: frontend
+    deps: [frontend:deps]
+    dir: "{{.FRONTEND_DIR}}"
+    sources:
+      - src/**/*
+      - public/**/*
+      - index.html
+      - vite.config.js
+      - package.json
+      - package-lock.json
+    generates:
+      - dist/index.html
     cmds:
-      - npm install
       - npm run build
 
-  build:
-    desc: 完整构建（前端 + 后端）
+  build:backend:
+    desc: 构建后端二进制
     deps: [build:frontend]
     cmds:
       - go build -o {{.APP_NAME}} .
 
+  build:
+    desc: 完整构建（前端 + 后端）
+    deps: [build:backend]
+
   clean:
     desc: 清理构建产物
     cmds:
-      - powershell -NoProfile -Command "Remove-Item -Force -ErrorAction SilentlyContinue '{{.APP_NAME}}','{{.APP_NAME}}.exe'; if (Test-Path 'frontend/dist') { Get-ChildItem 'frontend/dist' -Force | Where-Object { $_.Name -ne '.gitkeep' } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue }"
+      - powershell -NoProfile -Command "Remove-Item -Force -ErrorAction SilentlyContinue '{{.APP_NAME}}','{{.APP_NAME}}.exe','{{.APP_NAME}}-linux-amd64'; if (Test-Path '{{.FRONTEND_DIR}}/dist') { Get-ChildItem '{{.FRONTEND_DIR}}/dist' -Force | Where-Object { $_.Name -ne '.gitkeep' } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue }"
 
   test:
     desc: 运行 Go 测试
@@ -46,3 +78,12 @@ tasks:
     desc: 运行 Go 代码检查
     cmds:
       - go vet ./...
+
+  check:
+    desc: 运行 lint + test
+    deps: [lint, test]
+
+  deploy:
+    desc: 执行部署脚本（参数透传，例如 task deploy -- -Server 1.2.3.4）
+    cmds:
+      - powershell -NoProfile -ExecutionPolicy Bypass -File "{{.DEPLOY_SCRIPT}}" {{.CLI_ARGS}}

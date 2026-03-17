@@ -66,6 +66,52 @@
         >
           {{ loading ? '查询中...' : '查询' }}
         </button>
+
+        <button
+          v-if="!loading && !error && !empty && gradeData.grades.length > 0"
+          type="button"
+          class="min-h-11 rounded-lg px-4 text-sm font-semibold transition-colors"
+          :class="customCalcMode ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-emerald-600 text-white hover:bg-emerald-700'"
+          @click="toggleCustomCalcMode"
+        >
+          {{ customCalcMode ? '关闭自定义计算' : '开启自定义计算' }}
+        </button>
+      </div>
+    </section>
+
+    <section
+      v-if="customCalcMode"
+      class="sticky top-[49px] z-10 mt-4 rounded-xl bg-white/95 p-3 shadow-sm backdrop-blur"
+    >
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <p class="text-xs text-gray-500">已选绩点</p>
+          <p class="mt-1 text-xl font-bold text-emerald-600">{{ customStat.weightedGpa }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">已选学分</p>
+          <p class="mt-1 text-xl font-bold text-emerald-600">{{ customStat.totalCredits }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">已选课程</p>
+          <p class="mt-1 text-xl font-bold text-emerald-600">{{ customStat.courseCount }} 门</p>
+        </div>
+      </div>
+      <div class="mt-2 flex gap-2">
+        <button
+          type="button"
+          class="min-h-9 flex-1 rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white transition-colors hover:bg-emerald-700"
+          @click="selectAll"
+        >
+          全选
+        </button>
+        <button
+          type="button"
+          class="min-h-9 flex-1 rounded-lg bg-gray-200 px-3 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-300"
+          @click="deselectAll"
+        >
+          取消全选
+        </button>
       </div>
     </section>
 
@@ -117,16 +163,30 @@
             <div
               v-for="grade in group.items"
               :key="`${group.semester}-${grade.course_code}-${grade.course_name}`"
-              class="rounded-lg border border-gray-100 p-3"
+              class="rounded-lg border p-3 transition-colors"
+              :class="customCalcMode && isGradeSelected(grade) ? 'border-emerald-400 bg-emerald-50/50' : 'border-gray-100'"
+              :role="customCalcMode ? 'button' : undefined"
+              @click="customCalcMode && toggleGradeSelection(grade)"
             >
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <p class="truncate text-sm font-semibold text-gray-900">{{ grade.course_name }}</p>
-                  <span class="mt-1 inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-600">
-                    {{ grade.course_prop || '未知性质' }}
-                  </span>
+              <div class="flex items-start gap-3">
+                <div
+                  v-if="customCalcMode"
+                  class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors"
+                  :class="isGradeSelected(grade) ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300'"
+                >
+                  <svg v-if="isGradeSelected(grade)" class="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
                 </div>
-                <p class="text-2xl font-bold text-blue-600">{{ grade.score || '-' }}</p>
+                <div class="flex min-w-0 flex-1 items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-semibold text-gray-900">{{ grade.course_name }}</p>
+                    <span class="mt-1 inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-600">
+                      {{ grade.course_prop || '未知性质' }}
+                    </span>
+                  </div>
+                  <p class="text-2xl font-bold text-blue-600">{{ grade.score || '-' }}</p>
+                </div>
               </div>
 
               <div class="mt-3 grid grid-cols-3 gap-2 text-xs text-gray-600">
@@ -186,6 +246,9 @@ const gradeData = ref({
   total_stat: { weighted_gpa: 0, total_credits: 0, course_count: 0 }
 })
 
+const customCalcMode = ref(false)
+const selectedKeys = ref(new Set())
+
 const semesterOptions = computed(() => {
   const set = new Set(
     (gradeData.value.grades || [])
@@ -216,6 +279,66 @@ function getCookie() {
 function formatNumber(value) {
   const num = Number(value)
   return Number.isFinite(num) ? num.toFixed(2) : '0.00'
+}
+
+function gradeKey(grade) {
+  return `${grade.semester}-${grade.course_code}-${grade.course_name}`
+}
+
+const customStat = computed(() => {
+  if (selectedKeys.value.size === 0) {
+    return { weightedGpa: '0.00', totalCredits: '0.00', courseCount: 0 }
+  }
+  let weightedSum = 0, totalCredits = 0, courseCount = 0
+  for (const g of gradeData.value.grades) {
+    if (!selectedKeys.value.has(gradeKey(g))) continue
+    const credit = parseFloat(g.credit) || 0
+    const gpa = parseFloat(g.gpa) || 0
+    if (credit > 0) {
+      weightedSum += gpa * credit
+      totalCredits += credit
+      courseCount++
+    }
+  }
+  return {
+    weightedGpa: totalCredits > 0 ? (weightedSum / totalCredits).toFixed(2) : '0.00',
+    totalCredits: totalCredits.toFixed(2),
+    courseCount
+  }
+})
+
+function toggleGradeSelection(grade) {
+  const key = gradeKey(grade)
+  const next = new Set(selectedKeys.value)
+  if (next.has(key)) {
+    next.delete(key)
+  } else {
+    next.add(key)
+  }
+  selectedKeys.value = next
+}
+
+function isGradeSelected(grade) {
+  return selectedKeys.value.has(gradeKey(grade))
+}
+
+function selectAll() {
+  const next = new Set()
+  for (const g of gradeData.value.grades) {
+    next.add(gradeKey(g))
+  }
+  selectedKeys.value = next
+}
+
+function deselectAll() {
+  selectedKeys.value = new Set()
+}
+
+function toggleCustomCalcMode() {
+  customCalcMode.value = !customCalcMode.value
+  if (!customCalcMode.value) {
+    selectedKeys.value = new Set()
+  }
 }
 
 function toggleSemester(semester) {
@@ -251,6 +374,7 @@ async function fetchGrades() {
     }
 
     empty.value = gradeData.value.grades.length === 0
+    selectedKeys.value = new Set()
     semesterOpenState.value = {}
     for (const term of semesterOptions.value) {
       semesterOpenState.value[term] = true

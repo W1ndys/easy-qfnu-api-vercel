@@ -1,19 +1,19 @@
 <template>
   <div class="relative min-h-screen overflow-hidden bg-surface text-ink">
-    <div class="pointer-events-none absolute inset-x-0 top-0 h-[34rem] overflow-hidden">
-      <div class="hero-orbit absolute -left-16 top-24 h-40 w-40 opacity-60"></div>
-      <div class="hero-orbit absolute right-[-3rem] top-10 h-56 w-56 opacity-70"></div>
-      <div class="hero-orbit absolute bottom-10 left-1/3 h-24 w-24 opacity-50 [animation-delay:0.6s]"></div>
+    <div class="pointer-events-none absolute inset-x-0 top-0 h-[28rem] overflow-hidden sm:h-[34rem]">
+      <div class="hero-orbit absolute -left-16 top-20 h-28 w-28 opacity-55 sm:top-24 sm:h-40 sm:w-40 sm:opacity-60"></div>
+      <div class="hero-orbit absolute right-[-2.5rem] top-8 h-40 w-40 opacity-65 sm:right-[-3rem] sm:top-10 sm:h-56 sm:w-56 sm:opacity-70"></div>
+      <div class="hero-orbit absolute bottom-10 left-1/3 h-16 w-16 opacity-45 [animation-delay:0.6s] sm:h-24 sm:w-24 sm:opacity-50"></div>
     </div>
 
-    <header class="sticky top-0 z-40 px-4 pt-4 sm:px-6 lg:px-8">
+    <header class="sticky top-0 z-40 px-3 pt-2.5 sm:px-4 sm:pt-3">
       <div class="page-shell px-0 sm:px-0 lg:px-0">
-        <div class="surface-panel px-4 py-3 supports-[backdrop-filter]:bg-surface/80 supports-[backdrop-filter]:backdrop-blur md:px-6">
-          <div class="flex items-center gap-3">
+        <div class="surface-panel px-3 py-2.5 supports-[backdrop-filter]:bg-surface/80 supports-[backdrop-filter]:backdrop-blur sm:px-3.5 sm:py-3 md:px-4">
+          <div class="flex items-center gap-2 sm:gap-3">
             <button
               v-if="showBack"
               type="button"
-              class="surface-icon-button md:hidden"
+              class="surface-icon-button"
               aria-label="返回上一页"
               @click="router.back()"
             >
@@ -24,18 +24,18 @@
               v-else
               type="button"
               class="surface-icon-button md:hidden"
-              aria-label="回到首页"
+              aria-label="前往仪表盘"
               @click="router.push('/home')"
             >
               <AppIcon name="home" class="h-5 w-5" />
             </button>
 
             <button type="button" class="min-w-0 flex-1 text-left" @click="router.push('/home')">
-              <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted">QFNU Academic Hub</p>
-              <p class="font-display text-lg font-extrabold tracking-tight text-ink md:text-xl">曲园教务控制台</p>
+              <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted sm:text-[11px] sm:tracking-[0.24em]">Cookie Assistant</p>
+              <p class="font-display text-base font-extrabold tracking-tight text-ink sm:text-lg md:text-xl">曲奇助手</p>
             </button>
 
-            <nav class="hidden flex-1 items-center justify-center gap-2 xl:flex">
+            <nav class="hidden flex-1 items-center justify-center gap-2 2xl:flex">
               <RouterLink
                 v-for="item in primaryNavItems"
                 :key="item.path"
@@ -48,22 +48,13 @@
               </RouterLink>
             </nav>
 
-            <div class="hidden items-center gap-2 md:flex xl:hidden">
-              <button
-                v-if="showBack"
-                type="button"
-                class="surface-icon-button"
-                aria-label="返回上一页"
-                @click="router.back()"
-              >
-                <AppIcon name="back" class="h-5 w-5" />
-              </button>
-              <RouterLink to="/home" class="surface-button-quiet">返回总览</RouterLink>
+            <div class="hidden items-center gap-2 lg:flex 2xl:hidden">
+              <RouterLink to="/home" class="surface-button-quiet">入口仪表盘</RouterLink>
             </div>
 
             <button
               type="button"
-              class="surface-icon-button xl:hidden"
+              class="surface-icon-button 2xl:hidden"
               :aria-label="mobileMenuOpen ? '关闭导航菜单' : '打开导航菜单'"
               @click="mobileMenuOpen = !mobileMenuOpen"
             >
@@ -72,12 +63,12 @@
           </div>
 
           <Transition name="menu-slide">
-            <nav v-if="mobileMenuOpen" class="mt-4 grid gap-2 xl:hidden">
+            <nav v-if="mobileMenuOpen" class="mt-3 grid gap-2 sm:grid-cols-2 2xl:hidden">
               <RouterLink
                 v-for="item in primaryNavItems"
                 :key="`mobile-${item.path}`"
                 :to="item.path"
-                class="surface-nav-link justify-start px-5"
+                class="surface-nav-link justify-start px-4"
                 :class="{ 'surface-nav-link-active': isActive(item.path) }"
                 @click="mobileMenuOpen = false"
               >
@@ -90,11 +81,11 @@
       </div>
     </header>
 
-    <main class="relative z-10 pb-12 pt-6">
+    <main class="relative z-10 pb-[max(env(safe-area-inset-bottom),3rem)] pt-3 sm:pt-4">
       <div class="page-shell">
-        <section v-if="title || description || slots['header-extra']" class="surface-panel mb-6 p-6 md:p-8">
-          <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-center">
-            <div class="space-y-4">
+        <section v-if="title || description || slots['header-extra']" class="surface-panel mb-4 p-4 sm:mb-5 sm:p-5 md:p-6">
+          <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-center">
+            <div class="space-y-3 sm:space-y-4">
               <span class="eyebrow">
                 <AppIcon name="spark" class="h-4 w-4" />
                 {{ currentLabel }}
@@ -102,15 +93,15 @@
 
               <div>
                 <h1 class="section-title">{{ title }}</h1>
-                <p v-if="description" class="section-copy mt-3">{{ description }}</p>
+                <p v-if="description" class="section-copy mt-2.5">{{ description }}</p>
               </div>
             </div>
 
-            <div v-if="slots['header-extra']" class="surface-deep-well p-4 md:p-5">
+            <div v-if="slots['header-extra']" class="surface-deep-well p-3.5 sm:p-4">
               <slot name="header-extra" />
             </div>
 
-            <div v-else class="surface-deep-well hidden p-5 lg:block">
+            <div v-else class="surface-deep-well hidden p-4 lg:block">
               <p class="text-xs font-semibold uppercase tracking-[0.22em] text-muted">当前模块</p>
               <p class="mt-3 font-display text-2xl font-bold text-ink">{{ title }}</p>
               <p class="mt-3 text-sm leading-6 text-muted">{{ currentSummary }}</p>
@@ -122,7 +113,7 @@
       </div>
     </main>
 
-    <footer class="relative z-10 px-4 pb-8 text-center text-xs text-muted sm:px-6 lg:px-8">
+    <footer class="relative z-10 px-3 pb-[max(env(safe-area-inset-bottom),1.5rem)] text-center text-[11px] text-muted sm:px-5 sm:pb-8">
       <div class="page-shell px-0 sm:px-0 lg:px-0">
         <p>Easy QFNU API Lite · 中文软质感前端界面</p>
       </div>

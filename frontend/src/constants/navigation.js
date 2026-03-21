@@ -1,10 +1,10 @@
 export const primaryNavItems = [
   {
-    title: '首页总览',
-    shortTitle: '总览',
+    title: '入口仪表盘',
+    shortTitle: '仪表盘',
     path: '/home',
     icon: 'home',
-    description: '查看已登录状态、快速入口和核心模块的统一导航。'
+    description: '集中展示教务功能入口、当前登录状态和快捷跳转。'
   },
   {
     title: '成绩查询',

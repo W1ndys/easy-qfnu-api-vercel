@@ -1,24 +1,38 @@
 <template>
-  <AppLayout title="成绩查询">
-    <section class="rounded-xl bg-white p-4 shadow-sm">
-      <div class="grid gap-3">
-        <label class="text-sm text-gray-600">
-          学期
-          <select
-            v-model="filters.term"
-            class="mt-1 min-h-11 w-full rounded-lg border border-gray-200 px-3 text-base focus:border-blue-500 focus:outline-none"
-          >
+  <AppLayout
+    title="成绩查询"
+    description="支持按学期、课程类型和课程名筛选成绩，保留全部成绩/最好成绩视图，并提供自定义绩点计算模式。"
+  >
+    <template #header-extra>
+      <div class="grid grid-cols-3 gap-3 text-center">
+        <div class="surface-well px-3 py-4">
+          <p class="text-xs text-muted">总加权绩点</p>
+          <p class="mt-2 font-display text-xl font-bold text-ink">{{ loading || error ? '--' : formatNumber(gradeData.total_stat.weighted_gpa) }}</p>
+        </div>
+        <div class="surface-well px-3 py-4">
+          <p class="text-xs text-muted">总学分</p>
+          <p class="mt-2 font-display text-xl font-bold text-ink">{{ loading || error ? '--' : formatNumber(gradeData.total_stat.total_credits) }}</p>
+        </div>
+        <div class="surface-well px-3 py-4">
+          <p class="text-xs text-muted">课程数</p>
+          <p class="mt-2 font-display text-xl font-bold text-ink">{{ loading || error ? '--' : gradeData.total_stat.course_count || 0 }}</p>
+        </div>
+      </div>
+    </template>
+
+    <section class="surface-panel p-6 md:p-8">
+      <div class="grid gap-4 lg:grid-cols-3">
+        <label>
+          <span class="surface-field-label">学期</span>
+          <select v-model="filters.term" class="surface-select">
             <option value="">全部学期</option>
             <option v-for="term in semesterOptions" :key="term" :value="term">{{ term }}</option>
           </select>
         </label>
 
-        <label class="text-sm text-gray-600">
-          课程类型
-          <select
-            v-model="filters.course_type"
-            class="mt-1 min-h-11 w-full rounded-lg border border-gray-200 px-3 text-base focus:border-blue-500 focus:outline-none"
-          >
+        <label>
+          <span class="surface-field-label">课程类型</span>
+          <select v-model="filters.course_type" class="surface-select">
             <option value="">全部类型</option>
             <option v-for="item in courseTypes" :key="item.id" :value="item.id">
               {{ item.name }}
@@ -26,31 +40,33 @@
           </select>
         </label>
 
-        <label class="text-sm text-gray-600">
-          课程名称
+        <label>
+          <span class="surface-field-label">课程名称</span>
           <input
             v-model.trim="filters.course_name"
             type="text"
             placeholder="输入课程名关键词"
-            class="mt-1 min-h-11 w-full rounded-lg border border-gray-200 px-3 text-base focus:border-blue-500 focus:outline-none"
+            class="surface-input"
           />
         </label>
+      </div>
 
+      <div class="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-end">
         <div>
-          <p class="mb-2 text-sm text-gray-600">显示模式</p>
-          <div class="grid grid-cols-2 gap-2 rounded-lg bg-gray-100 p-1">
+          <p class="surface-field-label">显示模式</p>
+          <div class="surface-segment sm:grid-cols-2">
             <button
               type="button"
-              class="min-h-11 rounded-md text-sm font-medium transition-colors"
-              :class="filters.display_type === 'all' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'"
+              class="surface-segment-option"
+              :class="{ 'is-active': filters.display_type === 'all' }"
               @click="filters.display_type = 'all'"
             >
               全部成绩
             </button>
             <button
               type="button"
-              class="min-h-11 rounded-md text-sm font-medium transition-colors"
-              :class="filters.display_type === 'max' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'"
+              class="surface-segment-option"
+              :class="{ 'is-active': filters.display_type === 'max' }"
               @click="filters.display_type = 'max'"
             >
               最好成绩
@@ -58,143 +74,145 @@
           </div>
         </div>
 
-        <button
-          type="button"
-          class="min-h-11 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
-          :disabled="loading"
-          @click="fetchGrades"
-        >
-          {{ loading ? '查询中...' : '查询' }}
+        <button type="button" class="surface-button-primary" :disabled="loading" @click="fetchGrades">
+          <AppIcon name="search" class="h-4 w-4" />
+          {{ loading ? '正在查询…' : '查询成绩' }}
         </button>
 
         <button
           v-if="!loading && !error && !empty && gradeData.grades.length > 0"
           type="button"
-          class="min-h-11 rounded-lg px-4 text-sm font-semibold transition-colors"
-          :class="customCalcMode ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-emerald-600 text-white hover:bg-emerald-700'"
+          :class="customCalcMode ? 'surface-button-quiet' : 'surface-button'"
           @click="toggleCustomCalcMode"
         >
+          <AppIcon name="grade" class="h-4 w-4" />
           {{ customCalcMode ? '关闭自定义计算' : '开启自定义计算' }}
         </button>
       </div>
     </section>
 
-    <section
-      v-if="customCalcMode"
-      class="sticky top-[49px] z-10 mt-4 rounded-xl bg-white/95 p-3 shadow-sm backdrop-blur"
-    >
-      <div class="grid grid-cols-3 gap-3">
-        <div>
-          <p class="text-xs text-gray-500">已选绩点</p>
-          <p class="mt-1 text-xl font-bold text-emerald-600">{{ customStat.weightedGpa }}</p>
+    <section v-if="customCalcMode" class="surface-panel sticky top-24 z-20 mt-6 p-4 md:top-28 md:p-5">
+      <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+        <div class="grid grid-cols-3 gap-3">
+          <div class="surface-well px-3 py-4 text-center">
+            <p class="text-xs text-muted">已选绩点</p>
+            <p class="mt-2 font-display text-2xl font-bold text-success">{{ customStat.weightedGpa }}</p>
+          </div>
+          <div class="surface-well px-3 py-4 text-center">
+            <p class="text-xs text-muted">已选学分</p>
+            <p class="mt-2 font-display text-2xl font-bold text-success">{{ customStat.totalCredits }}</p>
+          </div>
+          <div class="surface-well px-3 py-4 text-center">
+            <p class="text-xs text-muted">已选课程</p>
+            <p class="mt-2 font-display text-2xl font-bold text-success">{{ customStat.courseCount }}</p>
+          </div>
         </div>
-        <div>
-          <p class="text-xs text-gray-500">已选学分</p>
-          <p class="mt-1 text-xl font-bold text-emerald-600">{{ customStat.totalCredits }}</p>
+
+        <div class="grid gap-2 sm:grid-cols-2">
+          <button type="button" class="surface-button-primary" @click="selectAll">全选当前结果</button>
+          <button type="button" class="surface-button-quiet" @click="deselectAll">清空选择</button>
         </div>
-        <div>
-          <p class="text-xs text-gray-500">已选课程</p>
-          <p class="mt-1 text-xl font-bold text-emerald-600">{{ customStat.courseCount }} 门</p>
-        </div>
-      </div>
-      <div class="mt-2 flex gap-2">
-        <button
-          type="button"
-          class="min-h-9 flex-1 rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white transition-colors hover:bg-emerald-700"
-          @click="selectAll"
-        >
-          全选
-        </button>
-        <button
-          type="button"
-          class="min-h-9 flex-1 rounded-lg bg-gray-200 px-3 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-300"
-          @click="deselectAll"
-        >
-          取消全选
-        </button>
       </div>
     </section>
 
-    <section class="mt-4 grid grid-cols-3 gap-3" v-if="!loading && !error">
-      <div class="rounded-xl bg-white p-3 shadow-sm">
-        <p class="text-xs text-gray-500">总加权绩点</p>
-        <p class="mt-1 text-xl font-bold text-gray-900">{{ formatNumber(gradeData.total_stat.weighted_gpa) }}</p>
+    <section v-if="!loading && !error" class="mt-6 grid gap-4 md:grid-cols-3">
+      <div class="surface-stat">
+        <p class="text-xs uppercase tracking-[0.18em] text-muted">Semesters</p>
+        <p class="mt-2 font-display text-3xl font-bold text-ink">{{ groupedGrades.length }}</p>
+        <p class="mt-2 text-sm leading-6 text-muted">本次结果共覆盖 {{ groupedGrades.length }} 个学期分组。</p>
       </div>
-      <div class="rounded-xl bg-white p-3 shadow-sm">
-        <p class="text-xs text-gray-500">总学分</p>
-        <p class="mt-1 text-xl font-bold text-gray-900">{{ formatNumber(gradeData.total_stat.total_credits) }}</p>
+      <div class="surface-stat">
+        <p class="text-xs uppercase tracking-[0.18em] text-muted">Results</p>
+        <p class="mt-2 font-display text-3xl font-bold text-ink">{{ gradeData.grades.length }}</p>
+        <p class="mt-2 text-sm leading-6 text-muted">当前筛选条件下共返回 {{ gradeData.grades.length }} 门课程成绩。</p>
       </div>
-      <div class="rounded-xl bg-white p-3 shadow-sm">
-        <p class="text-xs text-gray-500">课程总数</p>
-        <p class="mt-1 text-xl font-bold text-gray-900">{{ gradeData.total_stat.course_count || 0 }}</p>
+      <div class="surface-stat">
+        <p class="text-xs uppercase tracking-[0.18em] text-muted">Selected</p>
+        <p class="mt-2 font-display text-3xl font-bold text-ink">{{ selectedKeys.size }}</p>
+        <p class="mt-2 text-sm leading-6 text-muted">自定义模式下已勾选 {{ selectedKeys.size }} 门课程参与计算。</p>
       </div>
     </section>
 
-    <section class="mt-4 space-y-3">
-      <div v-if="loading" class="space-y-3">
-        <div class="h-24 animate-pulse rounded-xl bg-white shadow-sm"></div>
-        <div class="h-24 animate-pulse rounded-xl bg-white shadow-sm"></div>
+    <section class="mt-6 space-y-4">
+      <div v-if="loading" class="grid gap-4">
+        <div class="surface-skeleton h-36"></div>
+        <div class="surface-skeleton h-36"></div>
       </div>
 
-      <div v-else-if="error" class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+      <div v-else-if="error" class="surface-error">
         {{ error }}
       </div>
 
-      <div v-else-if="empty" class="rounded-xl bg-white p-6 text-center text-sm text-gray-500 shadow-sm">
-        未查询到成绩数据
+      <div v-else-if="empty" class="surface-empty">
+        暂未查询到符合条件的成绩数据，请调整筛选条件后重试。
       </div>
 
       <div v-else class="space-y-4">
-        <article
-          v-for="group in groupedGrades"
-          :key="group.semester"
-          class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm"
-        >
+        <article v-for="group in groupedGrades" :key="group.semester" class="surface-panel p-4 md:p-5">
           <button
             type="button"
-            class="flex min-h-11 w-full items-center justify-between bg-gray-50 px-4 text-left"
+            class="flex w-full items-center justify-between gap-4 rounded-2xl px-3 py-2 text-left transition-colors"
             @click="toggleSemester(group.semester)"
           >
-            <span class="font-semibold text-gray-800">{{ group.semester }}</span>
-            <span class="text-xs text-gray-500">{{ group.items.length }} 门</span>
+            <div>
+              <p class="font-display text-2xl font-bold tracking-tight text-ink">{{ group.semester }}</p>
+              <p class="mt-1 text-sm text-muted">共 {{ group.items.length }} 门课程，学分合计 {{ semesterCredits(group.items) }}</p>
+            </div>
+            <span class="surface-badge-neutral">{{ isSemesterOpen(group.semester) ? '收起' : '展开' }}</span>
           </button>
 
-          <div v-show="isSemesterOpen(group.semester)" class="space-y-3 p-3">
-            <div
+          <div v-show="isSemesterOpen(group.semester)" class="mt-4 grid gap-3">
+            <article
               v-for="grade in group.items"
               :key="`${group.semester}-${grade.course_code}-${grade.course_name}`"
-              class="rounded-lg border p-3 transition-colors"
-              :class="customCalcMode && isGradeSelected(grade) ? 'border-emerald-400 bg-emerald-50/50' : 'border-gray-100'"
+              class="surface-card p-4 md:p-5"
+              :class="[
+                customCalcMode ? 'surface-card-tappable' : '',
+                customCalcMode && isGradeSelected(grade) ? 'surface-card-selected' : ''
+              ]"
               :role="customCalcMode ? 'button' : undefined"
+              :tabindex="customCalcMode ? 0 : undefined"
               @click="customCalcMode && toggleGradeSelection(grade)"
+              @keyup.enter.prevent="customCalcMode && toggleGradeSelection(grade)"
+              @keyup.space.prevent="customCalcMode && toggleGradeSelection(grade)"
             >
-              <div class="flex items-start gap-3">
-                <div
-                  v-if="customCalcMode"
-                  class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors"
-                  :class="isGradeSelected(grade) ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300'"
-                >
-                  <svg v-if="isGradeSelected(grade)" class="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </div>
-                <div class="flex min-w-0 flex-1 items-start justify-between gap-3">
-                  <div class="min-w-0">
-                    <p class="truncate text-sm font-semibold text-gray-900">{{ grade.course_name }}</p>
-                    <span class="mt-1 inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-600">
-                      {{ grade.course_prop || '未知性质' }}
-                    </span>
+              <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_120px] lg:items-start">
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="font-display text-2xl font-bold tracking-tight text-ink">{{ grade.course_name || '未命名课程' }}</h3>
+                    <span class="surface-badge">{{ grade.course_prop || '性质未知' }}</span>
+                    <span v-if="grade.exam_type" class="surface-badge-neutral">{{ grade.exam_type }}</span>
                   </div>
-                  <p class="text-2xl font-bold text-blue-600">{{ grade.score || '-' }}</p>
+
+                  <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <div class="surface-well px-4 py-3">
+                      <p class="text-xs text-muted">课程编号</p>
+                      <p class="mt-2 text-sm font-semibold text-ink">{{ grade.course_code || '-' }}</p>
+                    </div>
+                    <div class="surface-well px-4 py-3">
+                      <p class="text-xs text-muted">学分</p>
+                      <p class="mt-2 text-sm font-semibold text-ink">{{ grade.credit || '-' }}</p>
+                    </div>
+                    <div class="surface-well px-4 py-3">
+                      <p class="text-xs text-muted">绩点</p>
+                      <p class="mt-2 text-sm font-semibold text-ink">{{ grade.gpa || '-' }}</p>
+                    </div>
+                    <div class="surface-well px-4 py-3">
+                      <p class="text-xs text-muted">考试方式</p>
+                      <p class="mt-2 text-sm font-semibold text-ink">{{ grade.exam_type || '-' }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="surface-deep-well flex min-h-[120px] flex-col items-center justify-center px-4 py-5 text-center">
+                  <p class="text-xs uppercase tracking-[0.22em] text-muted">Score</p>
+                  <p class="mt-3 font-display text-5xl font-extrabold tracking-tight text-accent">{{ grade.score || '-' }}</p>
+                  <p v-if="customCalcMode" class="mt-2 text-xs text-muted">
+                    {{ isGradeSelected(grade) ? '已加入计算' : '点击加入计算' }}
+                  </p>
                 </div>
               </div>
-
-              <div class="mt-3 grid grid-cols-3 gap-2 text-xs text-gray-600">
-                <p>学分：{{ grade.credit || '-' }}</p>
-                <p>绩点：{{ grade.gpa || '-' }}</p>
-                <p class="truncate">考试：{{ grade.exam_type || '-' }}</p>
-              </div>
-            </div>
+            </article>
           </div>
         </article>
       </div>
@@ -204,8 +222,9 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import AppLayout from '@/components/AppLayout.vue'
 import { getGrade } from '@/api/zhjw'
+import AppIcon from '@/components/AppIcon.vue'
+import AppLayout from '@/components/AppLayout.vue'
 import { useUserStore } from '@/stores/user'
 import { resolveRequestError } from '@/utils/requestError'
 
@@ -285,11 +304,20 @@ function gradeKey(grade) {
   return `${grade.semester}-${grade.course_code}-${grade.course_name}`
 }
 
+function semesterCredits(items) {
+  const total = items.reduce((sum, item) => sum + (Number(item.credit) || 0), 0)
+  return total.toFixed(2)
+}
+
 const customStat = computed(() => {
   if (selectedKeys.value.size === 0) {
     return { weightedGpa: '0.00', totalCredits: '0.00', courseCount: 0 }
   }
-  let weightedSum = 0, totalCredits = 0, courseCount = 0
+
+  let weightedSum = 0
+  let totalCredits = 0
+  let courseCount = 0
+
   for (const g of gradeData.value.grades) {
     if (!selectedKeys.value.has(gradeKey(g))) continue
     const credit = parseFloat(g.credit) || 0
@@ -300,6 +328,7 @@ const customStat = computed(() => {
       courseCount++
     }
   }
+
   return {
     weightedGpa: totalCredits > 0 ? (weightedSum / totalCredits).toFixed(2) : '0.00',
     totalCredits: totalCredits.toFixed(2),

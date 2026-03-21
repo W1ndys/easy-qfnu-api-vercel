@@ -16,7 +16,7 @@
       </div>
     </template>
 
-    <section class="surface-panel p-6 md:p-8">
+    <section class="surface-panel p-4 sm:p-5 md:p-6">
       <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
         <label>
           <span class="surface-field-label">学期筛选</span>
@@ -35,7 +35,7 @@
       </div>
     </section>
 
-    <section class="mt-6 space-y-4">
+    <section class="mt-5 space-y-3.5">
       <div v-if="loading" class="grid gap-4">
         <div class="surface-skeleton h-40"></div>
         <div class="surface-skeleton h-40"></div>
@@ -53,7 +53,7 @@
         <article
           v-for="item in results"
           :key="`${item.course_id}-${item.select_time}-${item.index}`"
-          class="surface-card p-5 md:p-6"
+          class="surface-card p-4 sm:p-5"
         >
           <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-start">
             <div>
@@ -67,7 +67,7 @@
                 <span class="surface-badge-neutral">{{ item.course_attr || '属性未知' }}</span>
               </div>
 
-              <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div class="mt-3.5 grid gap-2.5 md:grid-cols-2 xl:grid-cols-4">
                 <div class="surface-well px-4 py-3">
                   <p class="text-xs text-muted">授课教师</p>
                   <p class="mt-2 text-sm font-semibold text-ink">{{ item.teacher || '-' }}</p>
@@ -87,7 +87,7 @@
               </div>
             </div>
 
-            <div class="surface-deep-well flex min-h-[172px] flex-col justify-center px-5 py-6">
+            <div class="surface-deep-well flex min-h-[148px] flex-col justify-center px-4 py-4">
               <p class="text-xs uppercase tracking-[0.22em] text-muted">Selected At</p>
               <p class="mt-3 text-base font-semibold leading-8 text-accent">{{ item.select_time || '-' }}</p>
             </div>

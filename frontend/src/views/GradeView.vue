@@ -20,7 +20,7 @@
       </div>
     </template>
 
-    <section class="surface-panel p-6 md:p-8">
+    <section class="surface-panel p-4 sm:p-5 md:p-6">
       <div class="grid gap-4 lg:grid-cols-3">
         <label>
           <span class="surface-field-label">学期</span>
@@ -51,7 +51,7 @@
         </label>
       </div>
 
-      <div class="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-end">
+      <div class="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-end">
         <div>
           <p class="surface-field-label">显示模式</p>
           <div class="surface-segment sm:grid-cols-2">
@@ -91,7 +91,7 @@
       </div>
     </section>
 
-    <section v-if="customCalcMode" class="surface-panel sticky top-24 z-20 mt-6 p-4 md:top-28 md:p-5">
+    <section v-if="customCalcMode" class="surface-panel sticky top-24 z-20 mt-5 p-3.5 sm:p-4 md:top-28">
       <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
         <div class="grid grid-cols-3 gap-3">
           <div class="surface-well px-3 py-4 text-center">
@@ -115,7 +115,7 @@
       </div>
     </section>
 
-    <section v-if="!loading && !error" class="mt-6 grid gap-4 md:grid-cols-3">
+    <section v-if="!loading && !error" class="mt-5 grid gap-3.5 md:grid-cols-3">
       <div class="surface-stat">
         <p class="text-xs uppercase tracking-[0.18em] text-muted">Semesters</p>
         <p class="mt-2 font-display text-3xl font-bold text-ink">{{ groupedGrades.length }}</p>
@@ -133,7 +133,7 @@
       </div>
     </section>
 
-    <section class="mt-6 space-y-4">
+    <section class="mt-5 space-y-3.5">
       <div v-if="loading" class="grid gap-4">
         <div class="surface-skeleton h-36"></div>
         <div class="surface-skeleton h-36"></div>
@@ -148,7 +148,7 @@
       </div>
 
       <div v-else class="space-y-4">
-        <article v-for="group in groupedGrades" :key="group.semester" class="surface-panel p-4 md:p-5">
+        <article v-for="group in groupedGrades" :key="group.semester" class="surface-panel p-3.5 sm:p-4">
           <button
             type="button"
             class="flex w-full items-center justify-between gap-4 rounded-2xl px-3 py-2 text-left transition-colors"
@@ -165,7 +165,7 @@
             <article
               v-for="grade in group.items"
               :key="`${group.semester}-${grade.course_code}-${grade.course_name}`"
-              class="surface-card p-4 md:p-5"
+              class="surface-card p-3.5 sm:p-4"
               :class="[
                 customCalcMode ? 'surface-card-tappable' : '',
                 customCalcMode && isGradeSelected(grade) ? 'surface-card-selected' : ''
@@ -184,7 +184,7 @@
                     <span v-if="grade.exam_type" class="surface-badge-neutral">{{ grade.exam_type }}</span>
                   </div>
 
-                  <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <div class="mt-3.5 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
                     <div class="surface-well px-4 py-3">
                       <p class="text-xs text-muted">课程编号</p>
                       <p class="mt-2 text-sm font-semibold text-ink">{{ grade.course_code || '-' }}</p>
@@ -204,7 +204,7 @@
                   </div>
                 </div>
 
-                <div class="surface-deep-well flex min-h-[120px] flex-col items-center justify-center px-4 py-5 text-center">
+                <div class="surface-deep-well flex min-h-[110px] flex-col items-center justify-center px-3.5 py-4 text-center">
                   <p class="text-xs uppercase tracking-[0.22em] text-muted">Score</p>
                   <p class="mt-3 font-display text-5xl font-extrabold tracking-tight text-accent">{{ grade.score || '-' }}</p>
                   <p v-if="customCalcMode" class="mt-2 text-xs text-muted">

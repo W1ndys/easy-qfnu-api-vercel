@@ -32,7 +32,7 @@
       </div>
 
       <template v-else>
-        <section class="grid gap-4 md:grid-cols-3">
+        <section class="grid gap-3.5 md:grid-cols-3">
           <div class="surface-stat">
             <p class="text-xs uppercase tracking-[0.18em] text-muted">Earned</p>
             <p class="mt-2 font-display text-3xl font-bold text-ink">{{ summaryStats.earned }}</p>
@@ -50,7 +50,7 @@
           </div>
         </section>
 
-        <article class="surface-panel p-5 md:p-6">
+        <article class="surface-panel p-4 sm:p-5">
           <button type="button" class="flex w-full items-center justify-between gap-4 text-left" @click="showObjectives = !showObjectives">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Objectives</p>
@@ -63,7 +63,7 @@
           </div>
         </article>
 
-        <article class="surface-panel p-5 md:p-6">
+        <article class="surface-panel p-4 sm:p-5">
           <button type="button" class="flex w-full items-center justify-between gap-4 text-left" @click="showDescription = !showDescription">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Description</p>
@@ -79,7 +79,7 @@
         <article
           v-for="(group, index) in groups"
           :key="`${group.group_name}-${index}`"
-          class="surface-panel p-5 md:p-6"
+          class="surface-panel p-4 sm:p-5"
         >
           <button type="button" class="w-full text-left" @click="toggleGroup(index)">
             <div class="flex flex-wrap items-center justify-between gap-3">
@@ -101,7 +101,7 @@
             <article
               v-for="course in group.courses || []"
               :key="`${course.course_code}-${course.course_name}`"
-              class="surface-card p-4 md:p-5"
+              class="surface-card p-3.5 sm:p-4"
             >
               <div class="flex flex-wrap items-center justify-between gap-3">
                 <h3 class="font-semibold text-ink">{{ course.course_name || '未命名课程' }}</h3>

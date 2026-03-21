@@ -16,7 +16,7 @@
       </div>
     </template>
 
-    <section class="surface-panel p-6 md:p-8">
+    <section class="surface-panel p-4 sm:p-5 md:p-6">
       <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
         <label>
           <span class="surface-field-label">日期</span>
@@ -30,7 +30,7 @@
       </div>
     </section>
 
-    <section v-if="!loading && !error" class="mt-6 grid gap-4 md:grid-cols-3">
+    <section v-if="!loading && !error" class="mt-5 grid gap-3.5 md:grid-cols-3">
       <div class="surface-stat">
         <p class="text-xs uppercase tracking-[0.18em] text-muted">Today</p>
         <p class="mt-2 font-display text-3xl font-bold text-ink">{{ sortedCourses.length }}</p>
@@ -48,7 +48,7 @@
       </div>
     </section>
 
-    <section class="mt-6 space-y-4">
+    <section class="mt-5 space-y-3.5">
       <div v-if="loading" class="grid gap-4">
         <div class="surface-skeleton h-36"></div>
         <div class="surface-skeleton h-36"></div>
@@ -66,7 +66,7 @@
         <article
           v-for="course in sortedCourses"
           :key="`${course.index}-${course.name}-${course.rawTimeString}`"
-          class="surface-card p-5 md:p-6"
+          class="surface-card p-4 sm:p-5"
         >
           <div class="grid gap-4 lg:grid-cols-[84px_minmax(0,1fr)] lg:items-start">
             <div class="surface-deep-well flex min-h-[84px] items-center justify-center text-accent">

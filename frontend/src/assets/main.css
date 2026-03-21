@@ -59,7 +59,7 @@
 
 @layer components {
   .page-shell {
-    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-[32rem] px-3 sm:max-w-2xl sm:px-4 lg:max-w-4xl lg:px-5 xl:max-w-5xl;
   }
 
   .surface-panel {
@@ -303,28 +303,28 @@
     background: var(--surface);
     border-radius: 24px;
     box-shadow: var(--shadow-raised);
-    @apply p-4 md:p-5;
+    @apply p-3.5 sm:p-4;
   }
 
   .surface-warning {
     background: rgba(255, 255, 255, 0.32);
     border-radius: 24px;
     box-shadow: var(--shadow-inset);
-    @apply px-5 py-4 text-sm text-amber-800;
+    @apply px-4 py-3 text-sm text-amber-800;
   }
 
   .surface-error {
     background: rgba(255, 255, 255, 0.34);
     border-radius: 24px;
     box-shadow: var(--shadow-inset);
-    @apply px-5 py-4 text-sm text-rose-700;
+    @apply px-4 py-3 text-sm text-rose-700;
   }
 
   .surface-empty {
     background: var(--surface);
     border-radius: 28px;
     box-shadow: var(--shadow-inset);
-    @apply px-6 py-10 text-center text-sm text-muted;
+    @apply px-4 py-8 text-center text-sm text-muted;
   }
 
   .surface-skeleton {
@@ -357,11 +357,11 @@
   }
 
   .section-title {
-    @apply font-display text-3xl font-extrabold tracking-tight text-ink md:text-4xl;
+    @apply font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl md:text-4xl;
   }
 
   .section-copy {
-    @apply max-w-2xl text-sm leading-7 text-muted md:text-base;
+    @apply max-w-2xl text-sm leading-6 text-muted md:text-base md:leading-7;
   }
 
   .surface-text-block {

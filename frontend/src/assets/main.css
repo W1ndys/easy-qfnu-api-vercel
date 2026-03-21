@@ -1,14 +1,400 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html,
-body {
-  background-color: rgb(249 250 251);
-  color: rgb(31 41 55);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+:root {
+  color-scheme: light;
+  --surface: #E0E5EC;
+  --ink: #3D4852;
+  --muted: #6B7280;
+  --accent: #6C63FF;
+  --accent-light: #8B84FF;
+  --success: #38B2AC;
+  --placeholder: #A0AEC0;
+  --shadow-raised: 9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.55);
+  --shadow-hover: 12px 12px 20px rgba(163, 177, 198, 0.7), -12px -12px 20px rgba(255, 255, 255, 0.65);
+  --shadow-small: 5px 5px 10px rgba(163, 177, 198, 0.6), -5px -5px 10px rgba(255, 255, 255, 0.55);
+  --shadow-inset: inset 6px 6px 10px rgba(163, 177, 198, 0.6), inset -6px -6px 10px rgba(255, 255, 255, 0.55);
+  --shadow-inset-deep: inset 10px 10px 20px rgba(163, 177, 198, 0.7), inset -10px -10px 20px rgba(255, 255, 255, 0.65);
+  --shadow-inset-small: inset 3px 3px 6px rgba(163, 177, 198, 0.6), inset -3px -3px 6px rgba(255, 255, 255, 0.55);
+  --shadow-accent: 8px 8px 18px rgba(92, 86, 219, 0.28), -8px -8px 18px rgba(255, 255, 255, 0.48);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--surface);
+    color: var(--ink);
+    font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  ::selection {
+    background: rgba(108, 99, 255, 0.18);
+    color: var(--ink);
+  }
 }
 
 #app {
   min-height: 100vh;
+}
+
+@layer components {
+  .page-shell {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .surface-panel {
+    background: var(--surface);
+    border-radius: 32px;
+    box-shadow: var(--shadow-raised);
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .surface-panel-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .surface-card {
+    background: var(--surface);
+    border-radius: 28px;
+    box-shadow: var(--shadow-raised);
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .surface-card-interactive {
+    background: var(--surface);
+    border-radius: 28px;
+    box-shadow: var(--shadow-raised);
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .surface-card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .surface-card-selected {
+    background: rgba(56, 178, 172, 0.08);
+    box-shadow: var(--shadow-raised), inset 0 0 0 2px rgba(56, 178, 172, 0.22);
+  }
+
+  .surface-card-tappable {
+    cursor: pointer;
+  }
+
+  .surface-card-tappable:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .surface-well {
+    background: var(--surface);
+    box-shadow: var(--shadow-inset);
+    border-radius: 20px;
+  }
+
+  .surface-deep-well {
+    background: var(--surface);
+    box-shadow: var(--shadow-inset-deep);
+    border-radius: 24px;
+  }
+
+  .surface-pill {
+    background: var(--surface);
+    box-shadow: var(--shadow-inset-small);
+    border-radius: 9999px;
+  }
+
+  .surface-button,
+  .surface-button-primary,
+  .surface-button-quiet,
+  .surface-icon-button,
+  .surface-nav-link {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold transition-all duration-300 ease-out;
+    min-height: 44px;
+  }
+
+  .surface-button,
+  .surface-button-quiet,
+  .surface-icon-button,
+  .surface-nav-link {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-small);
+  }
+
+  .surface-button:hover,
+  .surface-button-quiet:hover,
+  .surface-icon-button:hover,
+  .surface-nav-link:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .surface-button:active,
+  .surface-button-quiet:active,
+  .surface-icon-button:active,
+  .surface-nav-link:active {
+    transform: translateY(0.5px) scale(0.99);
+    box-shadow: var(--shadow-inset-small);
+  }
+
+  .surface-button-primary {
+    background: linear-gradient(135deg, var(--accent-light), var(--accent));
+    color: #fff;
+    box-shadow: var(--shadow-accent);
+  }
+
+  .surface-button-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 10px 10px 20px rgba(92, 86, 219, 0.3), -10px -10px 20px rgba(255, 255, 255, 0.5);
+  }
+
+  .surface-button-primary:active {
+    transform: translateY(0.5px) scale(0.99);
+    box-shadow: inset 4px 4px 8px rgba(92, 86, 219, 0.35), inset -4px -4px 8px rgba(145, 140, 255, 0.2);
+  }
+
+  .surface-button-quiet {
+    color: var(--muted);
+  }
+
+  .surface-icon-button {
+    width: 48px;
+    min-width: 48px;
+    padding-inline: 0;
+  }
+
+  .surface-button:focus-visible,
+  .surface-button-primary:focus-visible,
+  .surface-button-quiet:focus-visible,
+  .surface-icon-button:focus-visible,
+  .surface-nav-link:focus-visible,
+  .surface-input:focus-visible,
+  .surface-select:focus-visible,
+  .surface-textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .surface-nav-link {
+    color: var(--muted);
+  }
+
+  .surface-nav-link-active {
+    background: linear-gradient(135deg, var(--accent-light), var(--accent));
+    color: #fff;
+    box-shadow: var(--shadow-accent);
+  }
+
+  .surface-input,
+  .surface-select,
+  .surface-textarea {
+    width: 100%;
+    border: 0;
+    border-radius: 16px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-inset);
+    @apply px-4 py-3 text-sm transition-all duration-300 ease-out placeholder:text-placeholder;
+  }
+
+  .surface-input,
+  .surface-select {
+    min-height: 48px;
+  }
+
+  .surface-input::placeholder,
+  .surface-textarea::placeholder {
+    color: var(--placeholder);
+  }
+
+  .surface-input:focus-visible,
+  .surface-select:focus-visible,
+  .surface-textarea:focus-visible {
+    box-shadow: var(--shadow-inset-deep);
+  }
+
+  .surface-select {
+    appearance: none;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+      linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position:
+      calc(100% - 22px) calc(50% - 2px),
+      calc(100% - 16px) calc(50% - 2px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    padding-right: 44px;
+  }
+
+  .surface-field-label {
+    @apply mb-2 block text-sm font-medium text-muted;
+  }
+
+  .surface-segment {
+    display: grid;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 20px;
+    background: var(--surface);
+    box-shadow: var(--shadow-inset-small);
+  }
+
+  .surface-segment-option {
+    @apply min-h-11 rounded-2xl px-3 text-sm font-semibold text-muted transition-all duration-300 ease-out;
+  }
+
+  .surface-segment-option.is-active {
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: var(--shadow-small);
+  }
+
+  .surface-badge,
+  .surface-badge-success,
+  .surface-badge-warm,
+  .surface-badge-neutral {
+    @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold;
+    box-shadow: var(--shadow-inset-small);
+  }
+
+  .surface-badge {
+    background: rgba(108, 99, 255, 0.08);
+    color: var(--accent);
+  }
+
+  .surface-badge-success {
+    background: rgba(56, 178, 172, 0.12);
+    color: #17857f;
+  }
+
+  .surface-badge-warm {
+    background: rgba(245, 158, 11, 0.12);
+    color: #b6690e;
+  }
+
+  .surface-badge-neutral {
+    background: rgba(61, 72, 82, 0.08);
+    color: var(--muted);
+  }
+
+  .surface-stat {
+    background: var(--surface);
+    border-radius: 24px;
+    box-shadow: var(--shadow-raised);
+    @apply p-4 md:p-5;
+  }
+
+  .surface-warning {
+    background: rgba(255, 255, 255, 0.32);
+    border-radius: 24px;
+    box-shadow: var(--shadow-inset);
+    @apply px-5 py-4 text-sm text-amber-800;
+  }
+
+  .surface-error {
+    background: rgba(255, 255, 255, 0.34);
+    border-radius: 24px;
+    box-shadow: var(--shadow-inset);
+    @apply px-5 py-4 text-sm text-rose-700;
+  }
+
+  .surface-empty {
+    background: var(--surface);
+    border-radius: 28px;
+    box-shadow: var(--shadow-inset);
+    @apply px-6 py-10 text-center text-sm text-muted;
+  }
+
+  .surface-skeleton {
+    background: var(--surface);
+    border-radius: 28px;
+    box-shadow: var(--shadow-raised);
+    @apply animate-pulse;
+  }
+
+  .surface-progress-track {
+    height: 12px;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: var(--surface);
+    box-shadow: var(--shadow-inset-small);
+  }
+
+  .surface-progress-bar {
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, var(--accent-light), var(--success));
+    box-shadow: 3px 3px 6px rgba(108, 99, 255, 0.2);
+    @apply transition-all duration-500 ease-out;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted;
+    background: var(--surface);
+    box-shadow: var(--shadow-small);
+  }
+
+  .section-title {
+    @apply font-display text-3xl font-extrabold tracking-tight text-ink md:text-4xl;
+  }
+
+  .section-copy {
+    @apply max-w-2xl text-sm leading-7 text-muted md:text-base;
+  }
+
+  .surface-text-block {
+    @apply text-sm leading-7 text-muted;
+  }
+
+  .hero-orbit {
+    border-radius: 9999px;
+    background: var(--surface);
+    box-shadow: var(--shadow-raised);
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .hero-orbit::before {
+    content: '';
+    position: absolute;
+    inset: 18%;
+    border-radius: inherit;
+    background: var(--surface);
+    box-shadow: var(--shadow-inset);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
